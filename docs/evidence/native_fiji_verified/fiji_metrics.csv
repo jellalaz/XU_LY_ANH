@@ -1,0 +1,2 @@
+pipeline_seconds_including_intermediate_io,predicted_objects,foreground_iou,foreground_dice,true_objects
+0.4121633,7,0.9801324503311258,0.9899665551839465,7

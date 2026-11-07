@@ -1,0 +1,17 @@
+# Local reference documents and generated reading aids
+materials/downloads/
+materials/metadata/
+
+# Python environments and caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+data/raw/
+data/bbbc039/
+data/synthetic/
+outputs/
+build/
+*.class
+*.log

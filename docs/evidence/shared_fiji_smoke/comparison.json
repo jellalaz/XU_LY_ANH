@@ -1,0 +1,41 @@
+{
+  "reference": "Actual Fiji ImageJ + MorphoLibJ Java API",
+  "jar": "C:\\Tools\\Fiji\\plugins\\MorphoLibJ_-1.6.5.jar",
+  "protocol": "Same float32 elevation, markers, binary mask, connectivity; no watershed dams.",
+  "process_seconds_including_jvm": 0.7485554999730084,
+  "comparison": {
+    "matched_pixel_agreement_foreground_union": 0.9845882870981947,
+    "different_pixels": 105,
+    "note": "Fiji is an implementation reference, not ground truth."
+  },
+  "environment": {
+    "python": "3.11.18 | packaged by Anaconda, Inc. | (main, Oct 26 2026, 18:13:29) [MSC v.1942 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26100-SP0",
+    "packages": {
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "scikit-image": "0.26.0",
+      "matplotlib": "3.11.2",
+      "tifffile": "2026.3.3"
+    }
+  },
+  "fiji_against_ground_truth": {
+    "foreground_iou": 0.9825378346915018,
+    "foreground_dice": 0.9911920140927775,
+    "object_precision": 1.0,
+    "object_recall": 1.0,
+    "object_f1": 1.0,
+    "panoptic_quality": 0.960377047864519,
+    "mean_matched_iou": 0.960377047864519,
+    "true_objects": 8,
+    "predicted_objects": 8,
+    "tp": 8,
+    "fp": 0,
+    "fn": 0,
+    "count_absolute_error": 0,
+    "split_objects": 0,
+    "merge_objects": 0,
+    "iou_threshold": 0.5,
+    "split_merge_overlap_fraction": 0.1
+  }
+}

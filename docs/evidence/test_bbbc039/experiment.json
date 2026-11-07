@@ -1,0 +1,44 @@
+{
+  "manifest": "D:\\XU_LY_ANH\\data\\bbbc039\\manifest.json",
+  "split": "test",
+  "limit": null,
+  "repeats": 2,
+  "warmup": 1,
+  "parameters": {
+    "engine": "custom",
+    "mode": "hmax",
+    "sigma": 1.0,
+    "threshold": -1.0,
+    "bright_foreground": true,
+    "operation": "opening_reconstruction",
+    "shape": "disk",
+    "radius": 1,
+    "min_area": 25,
+    "fill_holes": true,
+    "connectivity": 4,
+    "h": 2.0,
+    "adaptive_fraction": 0.15
+  },
+  "engines": [
+    "library"
+  ],
+  "modes": [
+    "ccl",
+    "raw",
+    "hmax",
+    "adaptive"
+  ],
+  "environment": {
+    "python": "3.11.18 | packaged by Anaconda, Inc. | (main, Oct 26 2026, 18:13:29) [MSC v.1942 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26100-SP0",
+    "packages": {
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "scikit-image": "0.26.0",
+      "matplotlib": "3.11.2",
+      "tifffile": "2026.3.3"
+    }
+  },
+  "aggregation": "Macro mean metrics over images. Median runtime; IO and metrics excluded.",
+  "warning": "Do not tune parameters using test split; adaptive is a hypothesis, not guaranteed improvement."
+}
