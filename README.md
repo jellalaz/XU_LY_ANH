@@ -38,6 +38,26 @@ python -m morpholab gui
 
 Chọn **Ảnh mẫu có nhãn → Phân đoạn**, sau đó sang tab **Fiji & đánh giá → Chạy Fiji / MorphoLibJ**. Chương trình có giao diện tiếng Việt, dùng chung phần lõi với CLI.
 
+## Phiên bản tích hợp 1.1
+
+Sáu tab gồm **Phân đoạn**, **Fiji & đánh giá**, **Benchmark**, **Nghiên cứu**, **Phiên đã lưu** và **Hướng dẫn**. Bạn điều khiển Python và Fiji từ một ứng dụng; Fiji được gọi bằng tiến trình Java khi cần và vẫn có script riêng để kiểm chứng trong Fiji. Không cần train mô hình AI.
+
+- Duyệt ảnh và nhãn đúng theo dataset/split; chỉnh marker bằng chuột; xem bảng thuộc tính đối tượng.
+- Kế hoạch `compare` so sánh cả bốn cách chạy; `ablation` đo ảnh hưởng khi bỏ từng bước; `robustness` kiểm tra nhiễu và độ mờ với seed cố định.
+- Lưu phiên đầy đủ và mở lại ảnh, cấu hình, ground truth, kết quả Python/Fiji mà không phải tính lại.
+- Phiếu HTML độc lập có hình, bảng, cấu hình và môi trường; mở được từ app hoặc in qua trình duyệt. Đây là phiếu thực nghiệm, chưa phải báo cáo cuối kỳ hoàn chỉnh.
+- Nút **Dừng tác vụ** và đóng cửa sổ gửi tín hiệu hủy, chờ thu hồi tiến trình Fiji. Chạy tuần tự từng ảnh; JVM giới hạn heap 512 MB, không phải giới hạn toàn bộ RAM của tiến trình.
+
+Đã kiểm tra 22 tests; đã đối chiếu đủ 50 ảnh test BBBC039 bằng Python tự cài, thư viện, Fiji shared và Fiji native (200 kết quả, không lỗi), cùng 84 kết quả ablation/robustness trên 6 ảnh validation.
+
+```bat
+python -m morpholab study data\bbbc039\manifest.json --kind compare --split test --limit 50 --repeats 1 --out outputs\compare_new
+python -m morpholab study data\bbbc039\manifest.json --config configs\research_library.json --kind ablation --limit 6 --repeats 1 --out outputs\ablation_new
+python -m morpholab study data\bbbc039\manifest.json --config configs\research_library.json --kind robustness --limit 6 --repeats 1 --out outputs\robustness_new
+```
+
+Thư mục xuất study mới phải chưa chứa `study.json`; các kết quả hoàn tất được giữ để tránh trộn dữ liệu. Khi hủy tác vụ, kết quả từng cấu hình đã hoàn tất vẫn được lưu và đánh dấu `cancelled`; chưa hỗ trợ tiếp tục tự động một study bị dừng.
+
 ## Chức năng đã có
 
 - Cài đặt Python riêng cho co, giãn, mở, đóng, reconstruction bằng hàng đợi, distance transform Euclid, BFS gán nhãn và Watershed bằng hàng đợi ưu tiên.

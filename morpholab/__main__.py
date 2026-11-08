@@ -14,7 +14,8 @@ def main(argv=None):
         sys.stderr.reconfigure(encoding='utf-8')
     parser=argparse.ArgumentParser(description='MorphoLab PTIT · morphology + watershed + Fiji reference')
     sub=parser.add_subparsers(dest='command',required=True)
-    sub.add_parser('gui',help='Mở ứng dụng desktop')
+    guicmd=sub.add_parser('gui',help='Mở ứng dụng desktop')
+    guicmd.add_argument('--smoke',action='store_true',help='Test GUI với ảnh mẫu; tự đóng sau 45 giây')
     ds=sub.add_parser('dataset'); ds.add_argument('kind',choices=['synthetic','bbbc039']); ds.add_argument('--root',default='data')
     seg=sub.add_parser('segment'); seg.add_argument('image'); seg.add_argument('--truth'); seg.add_argument('--out',default='outputs/single')
     seg.add_argument('--fiji',action='store_true'); seg.add_argument('--fiji-home',default=r'C:\Tools\Fiji')
@@ -25,14 +26,26 @@ def main(argv=None):
     bench.add_argument('--modes',nargs='+',choices=['ccl','raw','hmax','adaptive'],default=['ccl','raw','hmax','adaptive'])
     sw=sub.add_parser('sweep'); sw.add_argument('manifest'); sw.add_argument('--out',default='outputs/sweep'); sw.add_argument('--limit',type=int,default=6)
     batch=sub.add_parser('batch'); batch.add_argument('folder'); batch.add_argument('--out',default='outputs/batch')
+    research=sub.add_parser('study'); research.add_argument('manifest')
+    research.add_argument('--kind',choices=['compare','ablation','robustness'],default='compare')
+    research.add_argument('--split',choices=['training','validation','test'],default='validation')
+    research.add_argument('--limit',type=int,default=6); research.add_argument('--repeats',type=int,default=2)
+    research.add_argument('--out',required=True); research.add_argument('--fiji-home',default=r'C:\Tools\Fiji')
+    research.add_argument('--backends',nargs='+',choices=['python-custom','python-library','fiji-shared','fiji-native'],
+        default=['python-custom','python-library','fiji-shared','fiji-native'])
+    report=sub.add_parser('report'); report.add_argument('folder')
     ev=sub.add_parser('evaluate'); ev.add_argument('truth'); ev.add_argument('prediction'); ev.add_argument('--out',default='outputs/metrics.json'); ev.add_argument('--iou',type=float,default=.5)
-    for item in (seg,bench,sw,batch): item.add_argument('--config',default='configs/default.json')
+    for item in (seg,bench,sw,batch,research): item.add_argument('--config',default='configs/default.json')
     args=parser.parse_args(argv)
     if args.command=='gui':
         from .gui import launch
-        launch(); return
+        launch(smoke=args.smoke); return
     if args.command=='dataset':
         print(synthetic(args.root) if args.kind=='synthetic' else prepare_bbbc(args.root)); return
+    if args.command=='report':
+        from .reporting import session_report,study_report
+        folder=Path(args.folder)
+        print(study_report(folder) if (folder/'study.json').exists() else session_report(folder)); return
     if args.command=='evaluate':
         metrics=evaluate(read_labels(args.truth),read_labels(args.prediction),args.iou)
         Path(args.out).parent.mkdir(parents=True,exist_ok=True); write_json(args.out,metrics)
@@ -59,6 +72,12 @@ def main(argv=None):
         from .benchmark import process_folder
         frame=process_folder(args.folder,args.out,params)
         print(frame.to_string(index=False))
+        if (frame.status=='error').any(): sys.exit(1)
+    elif args.command=='study':
+        from .studies import study
+        frame,summary=study(args.manifest,args.out,params,args.kind,args.split,args.limit,args.repeats,
+                            args.backends,args.fiji_home)
+        print(summary.to_string(index=False))
         if (frame.status=='error').any(): sys.exit(1)
 
 

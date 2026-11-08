@@ -1,6 +1,6 @@
 # Kết quả kiểm chứng và benchmark MorphoLab
 
-Đo ngày 08/11/2026 bằng env Miniconda `ai` của máy hiện tại, Python 3.11.18. Tham số và môi trường đầy đủ lưu trong các file `experiment.json` dưới `docs/evidence`. Đây là các phép đo của phiên bản bàn giao; không phải điểm số được công bố bởi Broad Institute.
+Đo ngày 08/11/2026 bằng env Miniconda `ai` của máy hiện tại, Python 3.11.18. Tham số và môi trường đầy đủ lưu trong các file `experiment.json` và `study.json` dưới `docs/evidence`. Các mục đầu ghi nhận bản 1.0; mục cập nhật 1.1 bên dưới mở rộng kiểm chứng. Đây là các phép đo của dự án, không phải điểm số được công bố bởi Broad Institute.
 
 ## Kiểm tra độ đúng triển khai
 
@@ -71,7 +71,60 @@ Workflow Fiji độc lập trên cùng ảnh tìm 7 đối tượng, IoU tiền 
 ## Tái lập và giới hạn
 
 - `docs/evidence` giữ CSV từng ảnh, summary, biểu đồ và metadata của các thí nghiệm thành công. Dữ liệu ảnh tải lại qua `python -m morpholab dataset bbbc039`.
-- So sánh Fiji trên ảnh mẫu và test tích hợp đã được thực hiện; chưa chạy Fiji trên toàn bộ test BBBC039.
+- Bản 1.0 kiểm chứng Fiji trên ảnh mẫu; bản 1.1 đã chạy đầy đủ trên 50 ảnh test theo mục bên dưới.
 - Thời gian phụ thuộc tải máy; các đợt đo có thể chạy đồng thời trong quá trình kiểm chứng. Muốn dùng số thời gian để kết luận tối ưu trong báo cáo, nên đo lại tuần tự trên máy rảnh với nhiều lần lặp hơn.
 - Chưa có ablation đầy đủ cho mọi phép hình thái hoặc tối ưu tham số đa chiều. Ứng dụng đã có chức năng để mở rộng thực nghiệm này.
 - Báo cáo 30 trang, slides và nộp LMS chưa thuộc phần sản phẩm đã hoàn thành trong lần xây phần mềm này.
+
+## Cập nhật 1.1 và kiểm chứng trên toàn bộ 50 ảnh test
+
+Đã chạy 50 ảnh × 4 cách xử lý = **200 kết quả**, không lỗi. Có một lượt warm-up Python và một lượt đo, không lựa chọn lại tham số theo test. Bản tự cài 1.1 tối ưu khởi tạo reconstruction bằng một lượt giãn đồng bộ, chỉ đưa pixel thay đổi vào hàng đợi. Các test ngẫu nhiên ảnh xám xác nhận đầu ra bằng bản thư viện. So với bản cũ, thời gian không được coi là phép đo speedup có kiểm soát vì hai đợt có tải máy khác nhau.
+
+| Cách chạy | Macro F1 đối tượng | CI mô tả 95% | IoU tiền cảnh | Sai số đếm TB |
+| --- | --- | --- | --- | --- |
+| Python tự cài | 0.7087 | 0.6807–0.7305 | 0.8954 | 21.10 |
+| Python thư viện | 0.7054 | 0.6771–0.7277 | 0.8954 | 21.10 |
+| Fiji shared | 0.7188 | 0.6914–0.7386 | 0.8954 | 21.10 |
+| Fiji native | 0.8917 | 0.8592–0.9132 | 0.8910 | 13.58 |
+
+![Đối chiếu bốn cách chạy](evidence/v2_compare_bbbc039_test/quality.png)
+
+Fiji shared dùng đúng địa hình, marker và mask từ Python tự cài; trung vị đồng thuận pixel sau ghép ID khoảng 95.56%. Số lượng đối tượng và IoU tiền cảnh giống nhau nhưng F1 khác nhau do ranh giới và quy tắc đồng mức. Native có lượng tử hóa, mask, SE, distance transform và cách tạo marker riêng; vì vậy điểm cao hơn không chứng minh riêng triển khai Watershed của Fiji tốt hơn về mọi mặt. Cần phân tích từng ảnh trung gian để tìm nguyên nhân.
+
+CI là bootstrap percentile 1000 mẫu trên các ảnh; chỉ mô tả độ biến thiên, không dùng để tuyên bố tính ưu việt thống kê từ các khoảng chồng lấn. Các thời gian được ghi riêng theo phạm vi đo, không trộn thời gian JVM với thời gian kernel xử lý. Tham số và CSV chi tiết nằm trong `evidence/v2_compare_bbbc039_test`.
+
+## Ablation trên 6 ảnh validation
+
+Đã chạy 7 cấu hình × 6 ảnh = 42 kết quả, bản thư viện. Chỉ thay bước nêu trong tên biến thể, các tham số khác giữ nguyên. Mỗi biến thể có warm-up và một lượt đo.
+
+| Biến thể | Macro F1 đối tượng |
+| --- | --- |
+| Baseline | 0.6664 |
+| Bỏ Gaussian | 0.6884 |
+| Bỏ hình thái | 0.6664 |
+| Opening thường thay reconstruction | 0.6692 |
+| Bỏ lấp lỗ | 0.6592 |
+| Marker raw | 0.1563 |
+| Chỉ CCL | 0.8168 |
+
+Các con số không ủng hộ việc thêm mọi bước luôn làm kết quả tốt hơn: trên 6 ảnh này, bỏ Gaussian tăng F1, còn raw marker giảm mạnh do chia quá nhiều. Reconstruction không tạo khác biệt về F1 so với bỏ hình thái ở cấu hình đã chọn. Đây là khảo sát validation nhỏ, không tự thay đổi cấu hình rồi báo lại test như thể chưa dùng test trước đó.
+
+## Kiểm tra nhiễu và mờ trên 6 ảnh validation
+
+Đã chạy 7 biến thể × 6 ảnh = 42 kết quả, seed 20261108 + chỉ số ảnh; giữ ground truth gốc để đo độ suy giảm. Nhiễu được thêm trên ảnh min–max [0,1], clip [0,1]. Các biến thể có tương quan, không phải 42 ảnh độc lập mới.
+
+| Biến thể | Macro F1 đối tượng | IoU tiền cảnh |
+| --- | --- | --- |
+| Gốc | 0.6664 | 0.8798 |
+| Nhiễu σ=0.02 | 0.6527 | 0.8736 |
+| Nhiễu σ=0.05 | 0.6668 | 0.8374 |
+| Nhiễu σ=0.10 | 0.6385 | 0.7792 |
+| Mờ σ=1 | 0.6689 | 0.8751 |
+| Mờ σ=2 | 0.6406 | 0.8616 |
+| Mờ σ=3 | 0.6018 | 0.8461 |
+
+Chất lượng mask và chất lượng tách từng vật thể không luôn biến thiên giống nhau. Giữ cả IoU tiền cảnh và F1 đối tượng giúp phân biệt hai vấn đề này. Biểu đồ, CSV và phiếu HTML của hai khảo sát nằm trong `evidence/v2_ablation_bbbc039` và `evidence/v2_robustness_bbbc039`.
+
+## Kiểm tra phần mềm bản 1.1
+
+22 tests đã qua, bổ sung kiểm tra chỉnh marker, lưu/mở phiên, HTML escaping, cấm ghi trộn vào thư mục phiên cũ, tính tái lập stress test, hủy study có lưu kết quả một phần, thu hồi tiến trình con và đóng GUI khi worker đang chạy. Đã kiểm tra trực quan tab nghiên cứu và mở lại số liệu 50 ảnh từ lịch sử trên Windows. Phiên GUI thử tự đóng; không cần giữ app chạy nền để giữ số liệu.

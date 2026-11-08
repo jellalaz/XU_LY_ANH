@@ -1,0 +1,15 @@
+{
+  "engine": "library",
+  "mode": "hmax",
+  "sigma": 1.0,
+  "threshold": -1.0,
+  "bright_foreground": true,
+  "operation": "opening_reconstruction",
+  "shape": "disk",
+  "radius": 1,
+  "min_area": 25,
+  "fill_holes": true,
+  "connectivity": 4,
+  "h": 2.0,
+  "adaptive_fraction": 0.15
+}

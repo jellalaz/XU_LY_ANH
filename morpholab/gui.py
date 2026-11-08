@@ -24,10 +24,14 @@ BG='#101923'; PANEL='#192633'; INK='#edf5f7'; MUTED='#9aaebc'; ACCENT='#59dec3'
 class App:
     def __init__(self,root):
         self.root=root; root.title('MorphoLab · PTIT nhóm 1')
-        root.geometry('1440x930'); root.minsize(1080,720); root.configure(bg=BG)
+        width=min(1440,max(1000,root.winfo_screenwidth()-60))
+        height=min(930,max(640,root.winfo_screenheight()-80))
+        root.geometry(f'{width}x{height}'); root.minsize(1000,640); root.configure(bg=BG)
         self.image=None; self.imagepath=None; self.truth=None; self.result=None
         self.reference=None; self.diff=None; self.last_output=None
         self.events=queue.Queue(); self.busy=False; self.actions=[]
+        self.worker=None; self.token=None; self.closing=False
+        self.marker_edit=tk.BooleanVar(value=False); self.manual_markers=None
         self.vars={}; self.metrics={}
         style=ttk.Style(root); style.theme_use('clam')
         style.configure('.',font=('Segoe UI',10),background=PANEL,foreground=INK)
@@ -52,6 +56,7 @@ class App:
         self.build()
         root.after(100,self.poll)
         self.status.set('Sẵn sàng · Chọn ảnh hoặc mở dữ liệu mẫu để bắt đầu.')
+        root.protocol('WM_DELETE_WINDOW',self.close)
 
     def button(self,parent,text,command,accent=False,**pack):
         b=ttk.Button(parent,text=text,command=command,style='Accent.TButton' if accent else 'TButton')
@@ -63,8 +68,10 @@ class App:
         tk.Label(header,text='LAB',fg=ACCENT,bg=BG,font=('Segoe UI',23,'bold')).pack(side='left',padx=(5,18))
         tk.Label(header,text='PTIT / NHÓM 1\nHình thái học & Watershed',fg=MUTED,bg=BG,justify='left',font=('Segoe UI',10)).pack(side='left')
         self.button(header,'Chọn ảnh…',self.open_image,side='right',padx=4)
-        self.button(header,'Ảnh tế bào thật',self.real_demo,side='right',padx=4)
+        self.button(header,'Bộ ảnh & nhãn',self.browse_dataset,side='right',padx=4)
         self.button(header,'Ảnh mẫu có nhãn',self.demo,side='right',padx=4)
+        self.stop_button=ttk.Button(header,text='■ Dừng tác vụ',command=self.cancel,state='disabled')
+        self.stop_button.pack(side='right',padx=8)
         body=ttk.Frame(self.root); body.pack(fill='both',expand=True,padx=20)
         sideholder=ttk.Frame(body,style='Panel.TFrame',width=295)
         sideholder.pack(side='left',fill='y',padx=(0,16)); sideholder.pack_propagate(False)
@@ -127,7 +134,8 @@ class App:
         tk.Label(content,textvariable=self.file_label,bg=BG,fg=MUTED,anchor='w',font=('Segoe UI',10)).pack(fill='x',pady=(0,8))
         self.tabs=ttk.Notebook(content); self.tabs.pack(fill='both',expand=True)
         self.work=ttk.Frame(self.tabs); self.comp=ttk.Frame(self.tabs); self.batch=ttk.Frame(self.tabs); self.help=ttk.Frame(self.tabs)
-        for tab,name in [(self.work,'01  Phân đoạn'),(self.comp,'02  Fiji & đánh giá'),(self.batch,'03  Benchmark'),(self.help,'04  Thuật toán & cách dùng')]: self.tabs.add(tab,text=name)
+        self.research=ttk.Frame(self.tabs); self.archive=ttk.Frame(self.tabs)
+        for tab,name in [(self.work,'Phân đoạn'),(self.comp,'Fiji & đánh giá'),(self.batch,'Benchmark'),(self.research,'Nghiên cứu'),(self.archive,'Phiên đã lưu'),(self.help,'Hướng dẫn')]: self.tabs.add(tab,text=name)
         bar=ttk.Frame(self.work); bar.pack(fill='x',pady=8)
         self.view=tk.StringVar(value='Tổng quan 6 bước')
         chooser=ttk.Combobox(bar,textvariable=self.view,state='readonly',width=23,
@@ -135,6 +143,11 @@ class App:
         chooser.pack(side='left'); chooser.bind('<<ComboboxSelected>>',lambda _:self.draw())
         self.button(bar,'Xuất toàn bộ kết quả',self.export,side='right',padx=3)
         self.button(bar,'Mở thư mục kết quả',self.open_output,side='right',padx=3)
+        markerbar=ttk.Frame(self.work); markerbar.pack(fill='x',pady=3)
+        ttk.Checkbutton(markerbar,text='Sửa marker: trái thêm, phải xóa',variable=self.marker_edit).pack(side='left')
+        self.button(markerbar,'Áp dụng marker',self.apply_markers,side='left',padx=5)
+        self.button(markerbar,'Marker tự động',self.reset_markers,side='left',padx=3)
+        self.button(markerbar,'Xem bảng đối tượng',self.show_objects,side='right',padx=3)
         self.fig=Figure(figsize=(10,5.4),facecolor=BG,layout='constrained')
         self.canvas=FigureCanvasTkAgg(self.fig,master=self.work); self.canvas.get_tk_widget().pack(fill='both',expand=True)
         self.canvas.mpl_connect('button_press_event',self.inspect_object)
@@ -145,8 +158,9 @@ class App:
         self.button(refbar,'Nạp ground truth…',self.open_truth,side='left',padx=3)
         self.button(refbar,'Chạy Fiji / MorphoLibJ',self.fiji,accent=True,side='left',padx=3)
         self.button(refbar,'Workflow Fiji độc lập',lambda:self.fiji(native=True),side='left',padx=3)
-        self.button(refbar,'Nạp kết quả Fiji…',self.import_reference,side='left',padx=3)
-        self.button(refbar,'Thư mục Fiji…',self.choose_fiji,side='right',padx=3)
+        refoptions=ttk.Frame(self.comp); refoptions.pack(fill='x',pady=(0,5))
+        self.button(refoptions,'Nạp kết quả Fiji…',self.import_reference,side='left',padx=3)
+        self.button(refoptions,'Thư mục Fiji…',self.choose_fiji,side='left',padx=3)
         self.fiji_home=r'C:\Tools\Fiji'
         self.cfig=Figure(figsize=(10,3),facecolor=BG,layout='constrained')
         self.ccanvas=FigureCanvasTkAgg(self.cfig,master=self.comp); self.ccanvas.get_tk_widget().pack(fill='both',expand=True)
@@ -157,6 +171,8 @@ class App:
         self.comparison_note=tk.StringVar(value='Ground truth đánh giá độ đúng; Fiji kiểm chứng triển khai. IoU ghép đối tượng ≥ 0.5.')
         tk.Label(self.comp,textvariable=self.comparison_note,bg=BG,fg=MUTED,wraplength=1000,justify='left').pack(fill='x',pady=6)
         self.build_batch()
+        self.build_research()
+        self.build_archive()
         self.build_help()
         self.status=tk.StringVar()
         tk.Label(self.root,textvariable=self.status,bg=BG,fg=MUTED,anchor='w',font=('Segoe UI',10)).pack(fill='x',padx=22,pady=10)
@@ -175,8 +191,9 @@ class App:
         actions=ttk.Frame(self.batch); actions.pack(fill='x',pady=4)
         self.button(actions,'Chạy 4 phương pháp × 2 bản',self.benchmark,accent=True,side='left',padx=3)
         self.button(actions,'Khảo sát h trên validation',self.sweep,side='left',padx=3)
-        self.button(actions,'Chuẩn bị BBBC039',self.prepare_real,side='left',padx=3)
-        self.button(actions,'Xử lý thư mục ảnh…',self.batch_folder,side='left',padx=3)
+        dataactions=ttk.Frame(self.batch); dataactions.pack(fill='x',pady=4)
+        self.button(dataactions,'Chuẩn bị BBBC039',self.prepare_real,side='left',padx=3)
+        self.button(dataactions,'Xử lý thư mục ảnh…',self.batch_folder,side='left',padx=3)
         tk.Label(self.batch,text='Benchmark loại thời gian đọc/ghi ảnh và tính metric; có 1 lượt warm-up. Chỉ chọn tham số trên validation.',
             bg=BG,fg=MUTED,wraplength=980,justify='left').pack(fill='x',pady=8)
         self.bfig=Figure(figsize=(10,3.8),facecolor=BG,layout='constrained')
@@ -202,10 +219,15 @@ class App:
         if self.busy: return
         self.busy=True; self.status.set(message)
         for b in self.actions: b.configure(state='disabled')
+        from .tasks import Cancellation,task_scope,Cancelled
+        self.token=Cancellation(); self.stop_button.configure(state='normal')
         def worker():
-            try: self.events.put(('done',(done,function())))
+            try:
+                with task_scope(self.token): value=function()
+                self.events.put(('done',(done,value)))
+            except Cancelled as exc: self.events.put(('cancelled',str(exc)))
             except Exception as exc: self.events.put(('error',(str(exc),traceback.format_exc())))
-        threading.Thread(target=worker,daemon=True).start()
+        self.worker=threading.Thread(target=worker,daemon=True); self.worker.start()
 
     def poll(self):
         try:
@@ -215,15 +237,29 @@ class App:
                     self.log.insert('end',value+'\n'); self.log.see('end'); self.status.set(value)
                 else:
                     self.busy=False
+                    self.stop_button.configure(state='disabled')
                     for b in self.actions: b.configure(state='normal')
-                    if kind=='done':
+                    if self.closing: continue
+                    if kind=='cancelled': self.status.set(value)
+                    elif kind=='done':
                         callback,result=value
                         try: callback(result)
                         except Exception as exc: self.error(str(exc))
                     else:
                         self.log.insert('end',value[1]+'\n'); self.error(value[0])
         except queue.Empty: pass
+        if self.closing:
+            if self.worker is None or not self.worker.is_alive(): self.root.destroy(); return
         self.root.after(100,self.poll)
+
+    def cancel(self):
+        if self.token is not None: self.token.cancel()
+        self.status.set('Đang dừng; chờ bước tính hiện tại và thu hồi tiến trình Fiji…')
+
+    def close(self):
+        self.closing=True
+        if self.busy: self.cancel()
+        else: self.root.destroy()
 
     def error(self,message):
         self.status.set('Chưa hoàn tất · '+message[:150]); messagebox.showerror('MorphoLab',message,parent=self.root)
@@ -235,6 +271,7 @@ class App:
         except Exception as exc: self.error(str(exc)); return
         self.image=image; self.imagepath=Path(path); self.truth=truth
         self.result=None; self.reference=None; self.diff=None
+        self.manual_markers=None; self.marker_edit.set(False)
         self.file_label.set(f'{self.imagepath.name}  ·  {image.shape[1]} × {image.shape[0]}  ·  '+('Có ground truth' if truth is not None else 'Chưa có ground truth'))
         for var in self.cards.values(): var.set('—')
         self.draw(); self.draw_compare(); self.refresh_metrics()
@@ -263,6 +300,7 @@ class App:
 
     def segment_done(self,result):
         self.result=result; self.reference=None; self.diff=None
+        self.manual_markers=result.stages['markers'].copy()
         self.cards['objects'].set(str(np.unique(result.labels[result.labels>0]).size))
         self.cards['markers'].set(str(np.unique(result.stages['markers'][result.stages['markers']>0]).size))
         self.cards['time'].set(f'{result.timings["total"]:.3f} s')
@@ -285,8 +323,13 @@ class App:
                 ax=self.fig.add_subplot(2,3,i+1) if len(keys)>1 else self.fig.add_subplot()
                 array=self.result.stages[key]
                 if key=='labels': array=overlay(self.image,array)
-                elif key in ('markers','components'): array=label_rgb(array)
+                elif key in ('markers','components'):
+                    values=self.manual_markers if key=='markers' and self.marker_edit.get() and self.manual_markers is not None else array
+                    array=overlay(self.image,values) if key=='markers' and self.marker_edit.get() else label_rgb(values)
                 self.show(ax,array,titles.get(key,key),'magma' if key in ('distance','elevation') else 'gray')
+                if key=='markers' and self.marker_edit.get():
+                    props=object_table(self.manual_markers,self.image)
+                    if not props.empty: ax.scatter(props['centroid-1'],props['centroid-0'],s=35,facecolors='none',edgecolors=ACCENT)
         self.canvas.draw_idle()
 
     @staticmethod
@@ -310,6 +353,21 @@ class App:
         if self.result is None or event.xdata is None or event.ydata is None: return
         y,x=int(event.ydata+.5),int(event.xdata+.5)
         if not (0<=y<self.result.labels.shape[0] and 0<=x<self.result.labels.shape[1]): return
+        if self.marker_edit.get() and not self.busy:
+            if self.manual_markers is None: self.manual_markers=self.result.stages['markers'].copy()
+            if event.button==1:
+                if not self.result.stages['mask'][y,x]: self.status.set('Đặt marker bên trong vùng mask.'); return
+                if self.manual_markers[y,x]: return
+                self.manual_markers[y,x]=int(self.manual_markers.max(initial=0))+1
+            elif event.button==3:
+                positions=np.argwhere(self.manual_markers>0)
+                if not positions.size: return
+                nearest=positions[np.argmin(((positions-[y,x])**2).sum(1))]
+                label=self.manual_markers[tuple(nearest)]
+                self.manual_markers[self.manual_markers==label]=0
+            else: return
+            self.view.set('markers'); self.draw()
+            self.status.set('Marker đã sửa · Nhấn Áp dụng marker để tính lại Watershed.'); return
         idx=int(self.result.labels[y,x])
         if not idx: self.object_info.set('Vị trí đang chọn thuộc nền.'); return
         row=object_table(self.result.labels,self.image).set_index('label').loc[idx]
@@ -373,15 +431,13 @@ class App:
         if not name: return
         folder=Path(name)/self.output_folder('run').name
         result=self.result; truth=self.truth; reference=self.reference; source=self.imagepath
+        image=self.image.copy()
         def work():
-            export_result(result,folder,source)
-            if truth is not None: write_json(folder/'metrics.json',evaluate(truth,result.labels))
-            if reference is not None:
-                import tifffile
-                tifffile.imwrite(folder/'fiji_labels.tif',reference.astype(np.uint32))
-                stats,diff=compare_labels(reference,result.labels); write_json(folder/'fiji_comparison.json',stats)
-            return folder
-        def done(path): self.last_output=path; self.status.set('Đã xuất ảnh, tham số, objects.csv và metric: '+str(path))
+            from .sessions import save_session
+            return save_session(result,image,folder,truth,reference,source)
+        def done(path):
+            self.last_output=path; self.refresh_history()
+            self.status.set('Đã lưu phiên có thể mở lại và phiếu report.html: '+str(path))
         self.job(work,done,'Đang xuất kết quả…')
 
     def open_output(self):
@@ -461,6 +517,159 @@ class App:
             self.status.set(f'Xong {len(frame)} ảnh · {errors} lỗi · '+str(folder))
         self.job(lambda:process_folder(name,folder,params,progress=lambda s:self.events.put(('log',s))),done,'Đang xử lý thư mục ảnh…')
 
+    def apply_markers(self):
+        if self.result is None or self.manual_markers is None: self.error('Phân đoạn tự động trước khi sửa marker'); return
+        p=self.result.params; image=self.image.copy(); markers=self.manual_markers.copy()
+        self.job(lambda:run(image,p,manual_markers=markers),self.segment_done,'Đang tính Watershed với marker thủ công…')
+
+    def reset_markers(self):
+        self.marker_edit.set(False)
+        if self.result is not None:
+            p=self.result.params; image=self.image.copy()
+            self.job(lambda:run(image,p),self.segment_done,'Đang tạo lại marker tự động…')
+
+    def show_objects(self):
+        if self.result is None: self.error('Hãy phân đoạn trước'); return
+        table=object_table(self.result.labels,self.image)
+        window=tk.Toplevel(self.root); window.title('Bảng đối tượng · đơn vị pixel / pixel²'); window.geometry('1100x500')
+        columns=list(table.columns)
+        tree=ttk.Treeview(window,columns=columns,show='headings')
+        xs=ttk.Scrollbar(window,orient='horizontal',command=tree.xview)
+        ys=ttk.Scrollbar(window,orient='vertical',command=tree.yview)
+        tree.configure(xscrollcommand=xs.set,yscrollcommand=ys.set)
+        xs.pack(side='bottom',fill='x'); ys.pack(side='right',fill='y'); tree.pack(fill='both',expand=True)
+        for col in columns: tree.heading(col,text=col); tree.column(col,width=140,stretch=False)
+        for row in table.itertuples(index=False,name=None): tree.insert('',tk.END,values=[f'{v:.3f}' if isinstance(v,float) else v for v in row])
+
+    def build_research(self):
+        bar=ttk.Frame(self.research); bar.pack(fill='x',pady=10)
+        self.study_kind=tk.StringVar(value='compare')
+        ttk.Label(bar,text='Kế hoạch').pack(side='left',padx=5)
+        ttk.Combobox(bar,textvariable=self.study_kind,values=['compare','ablation','robustness'],state='readonly',width=15).pack(side='left')
+        self.button(bar,'Chạy kế hoạch',self.run_study,accent=True,side='left',padx=8)
+        self.button(bar,'Mở phiếu HTML',self.open_report,side='left',padx=3)
+        tk.Label(self.research,text='Dùng dataset, split, số ảnh và lặp đo từ tab Benchmark. Chạy tuần tự từng ảnh để giới hạn RAM.\ncompare: Python + Fiji thật · ablation: bỏ từng bước · robustness: nhiễu và mờ có seed cố định.',
+            bg=BG,fg=MUTED,justify='left',wraplength=900).pack(anchor='w',padx=8,pady=8)
+        columns=['variant','images','object_f1','ci_low','ci_high','foreground_iou','count_mae','pipeline_seconds','watershed_seconds','process_seconds','native_seconds_with_io']
+        box=ttk.Frame(self.research); box.pack(fill='both',expand=True)
+        self.study_table=ttk.Treeview(box,columns=columns,show='headings')
+        xs=ttk.Scrollbar(box,orient='horizontal',command=self.study_table.xview)
+        ys=ttk.Scrollbar(box,orient='vertical',command=self.study_table.yview)
+        self.study_table.configure(xscrollcommand=xs.set,yscrollcommand=ys.set)
+        xs.pack(side='bottom',fill='x'); ys.pack(side='right',fill='y'); self.study_table.pack(fill='both',expand=True)
+        for col in columns:
+            title={'variant':'Cấu hình','images':'Số ảnh','object_f1':'F1 đối tượng','ci_low':'CI 95% thấp','ci_high':'CI 95% cao',
+                'foreground_iou':'IoU tiền cảnh','count_mae':'Sai số đếm TB','pipeline_seconds':'Pipeline Python (s)',
+                'watershed_seconds':'Watershed (s)','process_seconds':'Tiến trình Fiji (s)','native_seconds_with_io':'Fiji native + IO (s)'}[col]
+            self.study_table.heading(col,text=title); self.study_table.column(col,width=150,stretch=False)
+        tk.Label(self.research,text='Fiji shared chỉ đo bước Watershed. Native có IO ảnh trung gian; process_seconds gồm khởi động JVM.\nKhông so các loại thời gian như cùng một phép đo. CI mô tả độ biến thiên giữa ảnh, không bảo đảm cải tiến.',
+            bg=BG,fg=MUTED,justify='left',wraplength=900).pack(anchor='w',padx=8,pady=12)
+
+    def run_study(self):
+        try: manifest,limit,repeats,params=self.experiment_inputs()
+        except Exception as exc: self.error(str(exc)); return
+        from .studies import study
+        kind=self.study_kind.get(); split=self.split.get(); home=self.fiji_home; folder=self.output_folder(kind)
+        def done(value):
+            frame,summary=value; self.last_output=folder
+            self.refresh_history()
+            self.study_table.delete(*self.study_table.get_children())
+            for _,row in summary.iterrows():
+                self.study_table.insert('',tk.END,values=[self.format_cell(row.get(c,'')) for c in self.study_table['columns']])
+            errors=int((frame.status=='error').sum())
+            self.status.set(f'Đã xong {kind} · {errors} lỗi · Phiếu HTML và CSV: '+str(folder))
+        self.job(lambda:study(manifest,folder,params,kind,split,limit,repeats,fiji_home=home,
+            progress=lambda s:self.events.put(('log',s))),done,'Đang chạy kế hoạch nghiên cứu…')
+
+    @staticmethod
+    def format_cell(value):
+        if value is None: return '—'
+        if isinstance(value,(float,np.floating)): return '' if np.isnan(value) else f'{value:.4f}'
+        return str(value)
+
+    def build_archive(self):
+        bar=ttk.Frame(self.archive); bar.pack(fill='x',pady=10)
+        self.button(bar,'Làm mới',self.refresh_history,side='left',padx=3)
+        self.button(bar,'Mở phiên đã chọn',self.open_selected_session,side='left',padx=3)
+        self.button(bar,'Mở phiên từ thư mục…',self.choose_session,side='left',padx=3)
+        self.button(bar,'Mở phiếu HTML',self.open_report,side='left',padx=3)
+        cols=['name','type','engine','mode','objects','f1']
+        self.history_table=ttk.Treeview(self.archive,columns=cols,show='headings')
+        for col in cols:
+            label={'name':'Tên phiên / thí nghiệm','type':'Loại','engine':'Bản cài đặt','mode':'Phương pháp','objects':'Đối tượng / số ảnh','f1':'F1 (nếu có)'}[col]
+            self.history_table.heading(col,text=label); self.history_table.column(col,width=150)
+        self.history_table.pack(fill='both',expand=True)
+        self.history_table.bind('<Double-1>',lambda e:self.open_selected_session())
+        self.refresh_history()
+
+    def refresh_history(self):
+        from .sessions import history
+        self.saved_sessions=history(ROOT/'outputs'); self.history_table.delete(*self.history_table.get_children())
+        for i,row in enumerate(self.saved_sessions):
+            self.history_table.insert('',tk.END,iid=str(i),values=[self.format_cell(row.get(c,'')) for c in self.history_table['columns']])
+
+    def choose_session(self):
+        path=filedialog.askdirectory(parent=self.root,title='Thư mục phiên đã lưu chứa run.json và input.tif')
+        if path: self.restore_session(path)
+
+    def open_selected_session(self):
+        selected=self.history_table.selection()
+        if selected:
+            row=self.saved_sessions[int(selected[0])]
+            if row['type']=='session': self.restore_session(row['folder'])
+            else:
+                import pandas as pd
+                path=Path(row['folder'])
+                if not (path/'summary.csv').exists(): self.error('Thí nghiệm chưa có dòng hoàn tất để hiển thị'); return
+                def done(summary):
+                    self.last_output=path; self.study_table.delete(*self.study_table.get_children())
+                    for _,r in summary.iterrows(): self.study_table.insert('',tk.END,values=[self.format_cell(r.get(c,'')) for c in self.study_table['columns']])
+                    self.tabs.select(self.research); self.status.set('Đã mở số liệu thí nghiệm: '+str(path))
+                self.job(lambda:pd.read_csv(path/'summary.csv'),done,'Đang mở số liệu…')
+
+    def restore_session(self,path):
+        from .sessions import load_session
+        def done(session):
+            self.image=session.image; self.imagepath=Path(session.source) if session.source else None
+            self.truth=session.truth; self.segment_done(session.result)
+            self.reference=session.reference
+            self.diff=compare_labels(self.reference,self.result.labels)[1] if self.reference is not None else None
+            for key,value in asdict(session.result.params).items(): self.vars[key].set(value)
+            self.last_output=Path(path); self.file_label.set('Phiên đã khôi phục · '+str(path))
+            self.draw_compare(); self.refresh_metrics(); self.tabs.select(self.work)
+            self.status.set('Đã khôi phục ảnh, nhãn đúng, cấu hình và kết quả; không tính lại.')
+        self.job(lambda:load_session(path),done,'Đang mở phiên đã lưu…')
+
+    def open_report(self):
+        path=(self.last_output or ROOT/'outputs')/'report.html'
+        if path.exists(): os.startfile(str(path))
+        else: self.error('Chưa có report.html. Lưu phiên hoặc chạy kế hoạch nghiên cứu trước.')
+
+    def browse_dataset(self):
+        window=tk.Toplevel(self.root); window.title('Duyệt ảnh và nhãn đúng'); window.geometry('1050x570')
+        controls=ttk.Frame(window); controls.pack(fill='x',padx=10,pady=10)
+        dataset=tk.StringVar(value='bbbc039'); split=tk.StringVar(value='validation'); selected=[]
+        for var,values in [(dataset,['synthetic','bbbc039']),(split,['validation','training','test'])]:
+            ttk.Combobox(controls,textvariable=var,values=values,state='readonly',width=17).pack(side='left',padx=5)
+        cols=['id','split','source']; tree=ttk.Treeview(window,columns=cols,show='headings')
+        for col in cols: tree.heading(col,text=col); tree.column(col,width=600 if col=='id' else 140)
+        scroll=ttk.Scrollbar(window,command=tree.yview); tree.configure(yscrollcommand=scroll.set)
+        scroll.pack(side='right',fill='y'); tree.pack(fill='both',expand=True,padx=10,pady=8)
+        def refresh():
+            tree.delete(*tree.get_children()); selected.clear()
+            manifest=ROOT/'data'/dataset.get()/'manifest.json'
+            if not manifest.exists(): messagebox.showinfo('Dataset','Chuẩn bị BBBC039 trong tab Benchmark trước.',parent=window); return
+            selected.extend(records(manifest,split.get()))
+            for i,(r,_,_) in enumerate(selected): tree.insert('',tk.END,iid=str(i),values=[r.get(c,'') for c in cols])
+        def load():
+            if self.busy: return
+            choice=tree.selection()
+            if choice:
+                _,image,truth=selected[int(choice[0])]; self.set_image(image,truth); window.destroy()
+        ttk.Button(controls,text='Lọc danh sách',command=refresh).pack(side='left',padx=8)
+        ttk.Button(controls,text='Mở ảnh + ground truth',command=load).pack(side='left',padx=8)
+        tree.bind('<Double-1>',lambda e:load()); refresh()
+
 
 HELP='''CÁCH CHẠY THÍ NGHIỆM
 1. Chọn ảnh mẫu có nhãn hoặc ảnh tế bào BBBC039.
@@ -469,6 +678,16 @@ HELP='''CÁCH CHẠY THÍ NGHIỆM
 4. Tab Fiji & đánh giá: nạp nhãn đúng hoặc chạy MorphoLibJ thật trên máy.
 5. Xuất toàn bộ ảnh TIFF, overlay, bảng đối tượng, tham số, metric và môi trường.
 6. Benchmark: chọn dataset, split, số ảnh, số lần đo. Chọn tham số trên validation trước khi đánh giá test.
+
+ỨNG DỤNG HỢP NHẤT
+Bộ ảnh & nhãn: duyệt ảnh và ground truth theo dataset/split.
+Nghiên cứu / compare: chạy Python tự cài, thư viện, Fiji chung đầu vào và workflow Fiji độc lập.
+Nghiên cứu / ablation: thử bỏ từng bước để đo tác dụng; robustness: thử ảnh nhiễu và mờ có seed.
+Xuất toàn bộ kết quả: lưu phiên có thể mở lại cùng report.html. Phiên đã lưu hiển thị các phiên và thí nghiệm.
+Sửa marker: nhấp trái thêm một seed trong mask, phải xóa vùng seed gần nhất; nhấn Áp dụng marker. Mỗi thành phần mask phải có marker.
+Đánh giá marker thủ công cần ghi rõ đây là kết quả có can thiệp của người dùng, không trộn với benchmark tự động.
+Dừng tác vụ: dừng hợp tác tại các điểm kiểm tra; đóng app cũng gửi lệnh dừng và chờ thu hồi tiến trình Fiji.
+Mỗi lần chỉ có một công việc nặng trong app. Fiji được gọi khi cần, giới hạn Java heap 512 MB (không phải toàn bộ RAM tiến trình).
 
 THUẬT TOÁN
 Erosion A⊖B giữ các vị trí phần tử cấu trúc đặt lọt trong A.
@@ -516,7 +735,12 @@ Báo cáo ~30 trang và slides ~10 trang là sản phẩm viết riêng, sử d�
 '''
 
 
-def launch():
+def launch(smoke=False):
     os.chdir(ROOT)
     if not (ROOT/'data/synthetic/manifest.json').exists(): synthetic(ROOT/'data')
-    root=tk.Tk(); App(root); root.mainloop()
+    root=tk.Tk(); app=App(root)
+    if smoke:
+        root.after(300,app.demo)
+        root.after(600,app.segment)
+        root.after(45000,app.close)
+    root.mainloop()

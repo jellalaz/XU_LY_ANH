@@ -8,6 +8,7 @@ from .datasets import records
 from .io import read_image,read_labels,write_json,environment
 from .pipeline import run,Parameters
 from .metrics import evaluate
+from .tasks import check_cancelled,Cancelled
 
 
 def process_folder(input_folder, output_folder, params=None, progress=print):
@@ -21,6 +22,7 @@ def process_folder(input_folder, output_folder, params=None, progress=print):
     target.mkdir(parents=True,exist_ok=True)
     rows=[]
     for i,path in enumerate(files):
+        check_cancelled()
         # Prefix prevents PNG/TIFF with the same stem from overwriting each other.
         folder=target/f'{i:04d}_{path.stem}'
         try:
@@ -33,6 +35,7 @@ def process_folder(input_folder, output_folder, params=None, progress=print):
                 metrics=evaluate(read_labels(gt,image.shape),result.labels)
                 row.update(metrics); write_json(folder/'metrics.json',metrics)
             progress(f'{path.name}: {row["objects"]} đối tượng')
+        except Cancelled: raise
         except Exception as exc:
             row={'image':path.name,'status':'error','error':str(exc)}
             progress(f'{path.name}: LỖI {exc}')
@@ -49,6 +52,7 @@ def benchmark(manifest, folder, params=None, split='validation', limit=None, rep
     folder=Path(folder); folder.mkdir(parents=True,exist_ok=True)
     rows=[]
     for record,imagepath,truthpath in items:
+        check_cancelled()
         image=read_image(imagepath); truth=read_labels(truthpath,image.shape)
         for engine in engines:
             for mode in modes:
@@ -97,6 +101,7 @@ def sweep(manifest,folder,params=None,heights=(.5,1.,2.,4.,6.),limit=6,progress=
     rows=[]
     base=params or Parameters()
     for height in heights:
+        check_cancelled()
         _,summary=benchmark(manifest,folder/f'h_{height:g}',replace(base,h=float(height)),
             split='validation',limit=limit,repeats=1,engines=('library',),modes=('hmax',),progress=progress)
         rows.append({'h':float(height),'object_f1':float(summary.object_f1.iloc[0])})

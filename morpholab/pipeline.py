@@ -5,6 +5,7 @@ from scipy import ndimage as ndi
 from skimage import filters, morphology, segmentation
 from . import algorithms as own
 from .io import normalized
+from .tasks import check_cancelled
 
 
 @dataclass
@@ -53,7 +54,8 @@ class Result:
         return self.stages['labels']
 
 
-def run(image, params=None):
+def run(image, params=None, manual_markers=None):
+    check_cancelled()
     p = Parameters(**asdict(params or Parameters())).validate()
     if np.asarray(image).ndim != 2 or not np.isfinite(image).all():
         raise ValueError('Pipeline yêu cầu ảnh 2D hữu hạn')
@@ -62,6 +64,7 @@ def run(image, params=None):
     def mark(name):
         nonlocal last
         now = perf_counter(); timings[name] = now-last; last = now
+        check_cancelled()
     fp = own.footprint(p.radius,p.shape)
     neighbors = ndi.generate_binary_structure(2,1 if p.connectivity==4 else 2)
     def morph(a,op):
@@ -141,6 +144,17 @@ def run(image, params=None):
         next_label += 1
         markers[box][pos] = next_label
     stages['markers'] = markers
+    if manual_markers is not None:
+        from .io import validate_labels
+        supplied=validate_labels(manual_markers,mask.shape)
+        if p.mode=='ccl': raise ValueError('Marker thủ công yêu cầu một phương pháp Watershed')
+        if np.any((supplied>0)&~mask): raise ValueError('Marker thủ công phải nằm trong mask hiện tại')
+        if not supplied.any() and mask.any(): raise ValueError('Hãy đặt ít nhất một marker')
+        if any(not np.any(supplied[components==idx]) for idx in range(1,int(components.max())+1)):
+            raise ValueError('Mỗi thành phần mask phải có ít nhất một marker; dùng marker tự động làm điểm khởi đầu')
+        markers=supplied.copy()
+        stages['markers']=markers
+        stages['manual_markers']=markers.copy()
     mark('markers')
     if p.mode=='ccl':
         labels = components.copy()

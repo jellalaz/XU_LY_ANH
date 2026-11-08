@@ -11,3 +11,5 @@
 | Báo cáo ~30 trang, slides ~10 trang | Dữ liệu, hình, bảng và mô tả để biên soạn | Chưa tạo bản báo cáo/slides hoàn chỉnh hoặc nộp LMS |
 
 Giao diện là phần bổ sung để sử dụng và trình diễn. Phần nghiên cứu có thể chạy độc lập qua CLI với cùng phần lõi. Chương trình hỗ trợ các yêu cầu kỹ thuật của đề tài; chất lượng báo cáo, phân tích, lựa chọn thí nghiệm và phần bảo vệ vẫn là các phần riêng cần hoàn thiện.
+
+Phiên bản 1.1 bổ sung kế hoạch nghiên cứu tích hợp, kiểm chứng cả bốn cách chạy trên toàn bộ 50 ảnh test, phân tích ablation/robustness, sửa marker, lưu/mở lại phiên và phiếu HTML. Thầy không yêu cầu một app duy nhất; thiết kế hợp nhất này phục vụ thao tác và demo, đồng thời giữ code CLI và script Fiji để giải thích và kiểm chứng độc lập.

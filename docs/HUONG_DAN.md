@@ -12,7 +12,37 @@
 6. So sánh ba khung Python, Fiji và vùng khác sau ánh xạ ID. Có thể nạp kết quả TIFF đã xuất thủ công từ Fiji.
 7. Nhấn **Xuất toàn bộ kết quả** và chọn thư mục cha. Mỗi lần xuất tạo thư mục riêng theo thời gian, tránh ghi đè lần trước.
 
-Ảnh thật: chọn **Ảnh tế bào thật**, chương trình mở ảnh validation đầu tiên của BBBC039 cùng nhãn đúng. Để thử các ảnh khác, dùng **Chọn ảnh** và **Nạp ground truth**. Ground truth đã giải mã nằm trong `data/bbbc039/labels`.
+Ảnh thật: chọn **Bộ ảnh & nhãn**, chọn BBBC039 và split, bấm **Lọc danh sách**, nhấp đúp ảnh muốn mở. Ảnh và nhãn đúng được nạp cùng nhau. Với ảnh ngoài dataset, dùng **Chọn ảnh** và **Nạp ground truth**. Ground truth BBBC039 đã giải mã nằm trong `data/bbbc039/labels`.
+
+## Làm việc trong một ứng dụng
+
+Fiji không bị thay thế bằng code Python: ứng dụng gọi JAR MorphoLibJ thật qua Java, thu kết quả rồi hiển thị cùng Python. Bạn không phải mở cửa sổ Fiji để chạy kiểm chứng tự động. Khi cần minh họa trực tiếp nền tảng Fiji, mở Script Editor và chạy file Groovy đã xuất. Mỗi chức năng nghiên cứu còn có lệnh CLI tương ứng để tái lập.
+
+**Sửa marker:** sau khi phân đoạn tự động, tích **Sửa marker**, nhấp trái trong vùng mask để thêm seed, nhấp phải để xóa vùng seed gần vị trí chọn nhất. Ảnh marker được hiển thị trên ảnh gốc. Nhấn **Áp dụng marker** để chạy lại Watershed; ảnh tự động và ảnh chỉnh thủ công phải được phân biệt khi báo cáo. Mỗi thành phần liên thông của mask cần ít nhất một marker. **Marker tự động** khôi phục cách tạo marker từ cấu hình đã chạy.
+
+**Xem bảng đối tượng:** mở bảng thuộc tính có thanh cuộn, gồm ID, diện tích, tâm, bounding box, đường kính tương đương và đặc trưng hình dạng. Bảng CSV đầy đủ vẫn được xuất cùng phiên.
+
+**Lưu và mở lại:** nút **Xuất toàn bộ kết quả** lưu phiên trong thư mục riêng, gồm ảnh đầu vào, ảnh trung gian, ground truth, nhãn Fiji nếu có, cấu hình và `report.html`. Tab **Phiên đã lưu** liệt kê các phiên và các study trong `outputs`; nhấp đúp để mở lại. Có thể mở phiên từ thư mục khác, nhưng thư mục lưu phiên mới phải trống. Không dùng pickle để tải dữ liệu.
+
+**Nút Dừng tác vụ:** yêu cầu dừng hợp tác ở điểm kiểm tra; một số phép thư viện có thể cần hoàn thành lệnh hiện tại trước khi dừng. Đóng app trong lúc xử lý cũng gửi tín hiệu hủy và đợi worker thoát, bao gồm dừng và thu hồi tiến trình Fiji. JVM giới hạn heap 512 MB; tổng RAM gồm thêm thư viện và phần ngoài heap. Không mở nhiều phiên app để chạy benchmark cùng lúc nếu muốn số thời gian có ý nghĩa.
+
+## Kế hoạch nghiên cứu tích hợp
+
+Thiết lập dataset, split, số ảnh, số lần đo ở tab **Benchmark**, sau đó sang **Nghiên cứu**:
+
+| Kế hoạch | Nội dung |
+| --- | --- |
+| `compare` | Chạy Python tự cài, thư viện, Fiji cùng đầu vào và workflow Fiji độc lập trên từng ảnh |
+| `ablation` | Baseline, bỏ Gaussian, bỏ hình thái, thay reconstruction bằng opening thường, bỏ lấp lỗ, marker raw và CCL |
+| `robustness` | Ảnh gốc, nhiễu Gaussian σ=0.02/0.05/0.1 và mờ σ=1/2/3, seed cố định |
+
+Cấu hình `configs/research_library.json` dùng bản thư viện cho ablation/robustness nhanh hơn. Các biến thể hỏng ảnh dùng nhãn gốc để đo mức suy giảm; chúng có tương quan và không được tính như các mẫu test độc lập mới. Study không chọn tham số từ test; dùng validation cho khảo sát và cố định cấu hình trước khi đánh giá test.
+
+Kết quả gồm `per_image.csv`, `summary.csv`, biểu đồ `quality.png`, `study.json` và phiếu `report.html`. F1 là macro mean, CI 95% là percentile bootstrap mô tả giữa các ảnh với 1000 lượt lấy mẫu. Một ảnh cho CI suy biến; CI không chứng minh chắc chắn một phương pháp vượt phương pháp khác. Khi một cấu hình lỗi, lỗi được ghi riêng, không biến thành điểm 0 hoặc tự động bỏ qua không thông báo. Khi hủy, phiếu kết quả chỉ gồm các lượt đã hoàn tất và trạng thái `cancelled`.
+
+Thời gian được ghi riêng: pipeline Python không gồm IO/metric, Fiji shared chỉ đo Watershed, thời gian tiến trình Fiji gồm khởi động JVM, native pipeline gồm xuất ảnh trung gian. Kết quả chất lượng của native có tiền xử lý và marker khác Python nên không quy mọi chênh lệch cho riêng thuật toán Watershed.
+
+Ví dụ đã hoàn thành nằm trong `outputs/v2_compare_bbbc039_test`, `outputs/v2_ablation_bbbc039`, `outputs/v2_robustness_bbbc039`; một phiên mẫu nằm trong `outputs/v2_example_session`. CSV và biểu đồ dùng cho báo cáo còn được giữ trong `docs/evidence`.
 
 ## Hai cách sử dụng Fiji
 

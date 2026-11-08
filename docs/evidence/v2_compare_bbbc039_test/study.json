@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "kind": "compare",
+  "description": "Đối chiếu Python tự cài, thư viện, Fiji dùng chung elevation/marker/mask và workflow Fiji độc lập.",
+  "status": "completed",
+  "manifest": "D:\\XU_LY_ANH\\data\\bbbc039\\manifest.json",
+  "split": "test",
+  "limit": 50,
+  "repeats": 1,
+  "warmup_python": 1,
+  "parameters": {
+    "engine": "custom",
+    "mode": "hmax",
+    "sigma": 1.0,
+    "threshold": -1.0,
+    "bright_foreground": true,
+    "operation": "opening_reconstruction",
+    "shape": "disk",
+    "radius": 1,
+    "min_area": 25,
+    "fill_holes": true,
+    "connectivity": 4,
+    "h": 2.0,
+    "adaptive_fraction": 0.15
+  },
+  "backends": [
+    "python-custom",
+    "python-library",
+    "fiji-shared",
+    "fiji-native"
+  ],
+  "planned_images": 50,
+  "seed": 20261108,
+  "started_utc": "2026-11-08T04:29:09.213845+00:00",
+  "uncertainty": "Descriptive percentile bootstrap 95% CI of per-image mean F1, 1000 draws; not independent replicates across corrupted variants.",
+  "timing": "Python pipeline excludes IO/metric. Shared Fiji watershed excludes JVM; process_seconds includes JVM and adapter. Native seconds includes intermediate TIFF writes. Sequential, one image at a time.",
+  "environment": {
+    "python": "3.11.18 | packaged by Anaconda, Inc. | (main, Oct 26 2026, 18:13:29) [MSC v.1942 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26100-SP0",
+    "packages": {
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "scikit-image": "0.26.0",
+      "matplotlib": "3.11.2",
+      "tifffile": "2026.3.3"
+    }
+  },
+  "finished_utc": "2026-11-08T04:49:54.042525+00:00"
+}

@@ -1,13 +1,37 @@
 """Compile/run a small Java adapter against the user's Fiji installation."""
 from pathlib import Path
 import subprocess
+import os
 import time
 import tifffile
 import numpy as np
 from .io import write_json, read_labels, environment
 from .metrics import compare_labels, evaluate
+from .tasks import check_cancelled
 
 ROOT=Path(__file__).resolve().parents[1]
+
+
+def _execute(command, timeout=180):
+    """Always reap our child, including cancellation, timeout and app closure."""
+    import subprocess
+    started=time.monotonic()
+    check_cancelled()
+    flags={'stdout':subprocess.PIPE,'stderr':subprocess.PIPE,'text':True,
+           'encoding':'utf-8','errors':'replace'}
+    if os.name=='nt': flags['creationflags']=subprocess.CREATE_NO_WINDOW
+    proc=subprocess.Popen(command,**flags)
+    try:
+        while True:
+            check_cancelled()
+            if time.monotonic()-started > timeout: raise TimeoutError('Fiji vượt thời gian chờ')
+            try:
+                stdout,stderr=proc.communicate(timeout=.2)
+                return subprocess.CompletedProcess(command,proc.returncode,stdout,stderr)
+            except subprocess.TimeoutExpired: pass
+    finally:
+        if proc.poll() is None: proc.kill()
+        proc.communicate()
 
 
 def installation(home=r'C:\Tools\Fiji'):
@@ -28,10 +52,9 @@ def run_reference(result, folder, truth=None, home=r'C:\Tools\Fiji', native=Fals
     source=ROOT/'fiji'/'MorphoBridge.java'
     cp=str(ij)+';'+str(morpho)
     compiled=build/'MorphoBridge.class'
-    flags={'capture_output':True,'text':True,'encoding':'utf-8','errors':'replace','timeout':180}
     native_source=ROOT/'fiji'/'NativePipeline.java'
     if not compiled.exists() or not (build/'NativePipeline.class').exists() or compiled.stat().st_mtime < max(source.stat().st_mtime,native_source.stat().st_mtime):
-        proc=subprocess.run([str(javac),'-encoding','UTF-8','-cp',cp,'-d',str(build),str(source),str(native_source)],**flags)
+        proc=_execute([str(javac),'-J-Xmx256m','-encoding','UTF-8','-cp',cp,'-d',str(build),str(source),str(native_source)])
         if proc.returncode: raise RuntimeError(proc.stdout+'\n'+proc.stderr)
     for key in ('elevation','markers','mask'):
         a=result.stages[key]
@@ -51,7 +74,7 @@ def run_reference(result, folder, truth=None, home=r'C:\Tools\Fiji', native=Fals
         command=['NativePipeline',str(folder),str(p.radius),str(p.h),str(p.connectivity),str(p.sigma),str(p.min_area),str(p.bright_foreground).lower()]
     else:
         command=['MorphoBridge',str(folder),str(result.params.connectivity)]
-    proc=subprocess.run([str(java),'-Djava.awt.headless=true','-cp',str(build)+';'+cp,*command],**flags)
+    proc=_execute([str(java),'-Xmx512m','-Djava.awt.headless=true','-cp',str(build)+';'+cp,*command])
     (folder/'bridge.log').write_text(proc.stdout+'\n'+proc.stderr,encoding='utf-8')
     if proc.returncode: raise RuntimeError('Fiji bridge thất bại: '+proc.stdout+'\n'+proc.stderr)
     labels=read_labels(folder/'morpholibj_labels.tif',result.labels.shape)

@@ -6,6 +6,7 @@ Distance uses a one-pixel background frame. Connectivity is explicitly 4 or 8.
 from collections import deque
 import heapq
 import numpy as np
+from .tasks import check_cancelled
 
 
 def offsets(connectivity=4):
@@ -43,6 +44,7 @@ def binary_morphology(image, se, operation):
     padded = np.pad(a, ((ry, ry), (rx, rx)), constant_values=False)
     result = np.full(a.shape, operation == "erosion", bool)
     for y, x in np.argwhere(se):
+        check_cancelled()
         dy, dx = int(y - ry), int(x - rx)
         # Dilation samples x-b; erosion samples x+b (important for asymmetric SE).
         sign = -1 if operation == "dilation" else 1
@@ -63,13 +65,17 @@ def connected_components(mask, connectivity=4):
     out = np.zeros(a.shape, np.int32)
     h, w = a.shape
     label = 0
+    visited=0
     for y, x in zip(*np.nonzero(a)):
+        if x == 0 or (int(y)*w+int(x))%2048 == 0: check_cancelled()
         if out[y, x]:
             continue
         label += 1
         out[y, x] = label
         q = deque([(int(y), int(x))])
         while q:
+            visited+=1
+            if visited%2048 == 0: check_cancelled()
             cy, cx = q.popleft()
             for dy, dx in neighbors:
                 ny, nx = cy+dy, cx+dx
@@ -86,12 +92,23 @@ def reconstruction_dilation(seed, mask, connectivity=4):
         raise ValueError("Seed and mask must be finite 2D arrays of equal shape")
     if np.any(seed > mask):
         raise ValueError("Dilation reconstruction requires seed <= mask")
-    result = seed.copy()
-    h, w = result.shape
-    q = deque((int(y), int(x)) for y, x in np.ndindex(result.shape))
-    pending = np.ones(result.shape, bool)
+    # One synchronous dilation initializes only changed sites. Unchanged sites
+    # have already propagated their original values to every neighbor in this
+    # pass. Further increases therefore need propagation only from changed sites.
     neighbors = offsets(connectivity)
+    h,w=seed.shape
+    padded=np.pad(seed,1,constant_values=-np.inf)
+    result=seed.copy()
+    for dy,dx in neighbors:
+        np.maximum(result,padded[1+dy:1+dy+h,1+dx:1+dx+w],out=result)
+    np.minimum(result,mask,out=result)
+    h, w = result.shape
+    pending = result > seed
+    q = deque(zip(*np.nonzero(pending)))
+    steps=0
     while q:
+        steps+=1
+        if steps%2048==0: check_cancelled()
         y, x = q.popleft()
         pending[y,x] = False
         value = result[y,x]
@@ -143,8 +160,10 @@ def distance_transform(mask):
     a = np.pad(np.asarray(mask, bool), 1, constant_values=False)
     f = np.where(a, np.inf, 0.0)
     for x in range(f.shape[1]):
+        if x%32==0: check_cancelled()
         f[:,x] = _squared_edt_1d(f[:,x])
     for y in range(f.shape[0]):
+        if y%32==0: check_cancelled()
         f[y,:] = _squared_edt_1d(f[y,:])
     return np.sqrt(f[1:-1,1:-1])
 
@@ -182,7 +201,10 @@ def watershed(elevation, markers, mask, connectivity=4):
         age += 1
     neighbors = offsets(connectivity)
     h, w = a.shape
+    steps=0
     while heap:
+        steps+=1
+        if steps%2048==0: check_cancelled()
         cost, _, y, x = heapq.heappop(heap)
         for dy, dx in neighbors:
             ny, nx = y+dy, x+dx
