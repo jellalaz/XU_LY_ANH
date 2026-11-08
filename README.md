@@ -38,7 +38,7 @@ python -m morpholab gui
 
 Chọn **Ảnh mẫu có nhãn → Phân đoạn**, sau đó sang tab **Fiji & đánh giá → Chạy Fiji / MorphoLibJ**. Chương trình có giao diện tiếng Việt, dùng chung phần lõi với CLI.
 
-## Phiên bản tích hợp 1.1
+## Phiên bản tích hợp 1.2
 
 Sáu tab gồm **Phân đoạn**, **Fiji & đánh giá**, **Benchmark**, **Nghiên cứu**, **Phiên đã lưu** và **Hướng dẫn**. Bạn điều khiển Python và Fiji từ một ứng dụng; Fiji được gọi bằng tiến trình Java khi cần và vẫn có script riêng để kiểm chứng trong Fiji. Không cần train mô hình AI.
 
@@ -48,7 +48,11 @@ Sáu tab gồm **Phân đoạn**, **Fiji & đánh giá**, **Benchmark**, **Nghi�
 - Phiếu HTML độc lập có hình, bảng, cấu hình và môi trường; mở được từ app hoặc in qua trình duyệt. Đây là phiếu thực nghiệm, chưa phải báo cáo cuối kỳ hoàn chỉnh.
 - Nút **Dừng tác vụ** và đóng cửa sổ gửi tín hiệu hủy, chờ thu hồi tiến trình Fiji. Chạy tuần tự từng ảnh; JVM giới hạn heap 512 MB, không phải giới hạn toàn bộ RAM của tiến trình.
 
-Đã kiểm tra 22 tests; đã đối chiếu đủ 50 ảnh test BBBC039 bằng Python tự cài, thư viện, Fiji shared và Fiji native (200 kết quả, không lỗi), cùng 84 kết quả ablation/robustness trên 6 ảnh validation.
+Giao diện có giải thích ngắn bằng tiếng Việt ngay cạnh thuật ngữ tiếng Anh, cảnh báo kết quả rỗng hoặc chưa chạy lại, và nút khôi phục cấu hình mặc định. Khảo sát h chạy đúng engine đang chọn và xuất cấu hình hmax tương ứng.
+
+Đã chạy qua 29 kiểm thử, gồm 7 luồng giao diện Tk thực và tích hợp Fiji. [Biên bản kiểm tra phần mềm](docs/KIEM_THU_PHAN_MEM.md) ghi rõ cách chạy và giới hạn. Đã đối chiếu đủ 50 ảnh test BBBC039 bằng Python tự cài, thư viện, Fiji shared và Fiji native (200 kết quả, không lỗi), cùng 84 kết quả ablation/robustness trên 6 ảnh validation.
+
+Ứng dụng là công cụ hỗ trợ nghiên cứu và minh họa. Đề bài yêu cầu lý thuyết, cài đặt, kiểm chứng Fiji, thực nghiệm, báo cáo và slide; không bắt buộc giao diện tích hợp, cũng không nêu điểm cộng riêng cho giao diện.
 
 ```bat
 python -m morpholab study data\bbbc039\manifest.json --kind compare --split test --limit 50 --repeats 1 --out outputs\compare_new

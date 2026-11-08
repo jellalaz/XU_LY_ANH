@@ -1,5 +1,5 @@
 """MorphoLab PTIT: reproducible 2D instance segmentation."""
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 # Keep generated font cache inside the project, also under restricted execution.
 import os as _os

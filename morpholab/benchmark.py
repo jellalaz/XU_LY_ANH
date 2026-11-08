@@ -99,11 +99,11 @@ def sweep(manifest,folder,params=None,heights=(.5,1.,2.,4.,6.),limit=6,progress=
     """Tune on validation only. This function cannot select the test split."""
     folder=Path(folder); folder.mkdir(parents=True,exist_ok=True)
     rows=[]
-    base=params or Parameters()
+    base=replace(params or Parameters(),mode='hmax').validate()
     for height in heights:
         check_cancelled()
         _,summary=benchmark(manifest,folder/f'h_{height:g}',replace(base,h=float(height)),
-            split='validation',limit=limit,repeats=1,engines=('library',),modes=('hmax',),progress=progress)
+            split='validation',limit=limit,repeats=1,engines=(base.engine,),modes=('hmax',),progress=progress)
         rows.append({'h':float(height),'object_f1':float(summary.object_f1.iloc[0])})
     table=pd.DataFrame(rows)
     best=table.sort_values(['object_f1','h'],ascending=[False,True]).iloc[0]

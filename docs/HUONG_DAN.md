@@ -12,6 +12,18 @@
 6. So sánh ba khung Python, Fiji và vùng khác sau ánh xạ ID. Có thể nạp kết quả TIFF đã xuất thủ công từ Fiji.
 7. Nhấn **Xuất toàn bộ kết quả** và chọn thư mục cha. Mỗi lần xuất tạo thư mục riêng theo thời gian, tránh ghi đè lần trước.
 
+## Giao diện và cảnh báo ở bản 1.2
+
+Lựa chọn giữ tên thuật toán tiếng Anh, kèm giải thích trong ngoặc: `erosion (co ảnh)`, `dilation (giãn ảnh)`, `hmax (lọc cực đại theo h)`, `mask (vùng tiền cảnh)` và `ground truth (nhãn đúng)`. Di chuột trên các tham số chính để đọc gợi ý. Cấu hình JSON và tên trường CSV giữ nguyên để các lệnh cũ tiếp tục dùng được.
+
+- Thanh thông báo dưới tên ảnh cho biết kết quả đã cũ khi bạn thay tham số. Chạy lại **Phân đoạn ảnh** trước khi so sánh Fiji, áp dụng marker hoặc xuất phiên.
+- Nếu sửa marker, nhấn **Áp dụng marker** hoặc **Marker tự động** trước khi xuất và kiểm chứng.
+- Nếu không còn đối tượng, ảnh kết quả hiện thông báo thay vì chỉ chồng ảnh gốc. Với ảnh 192×192, toàn ảnh chỉ có 36.864 pixel; đặt diện tích tối thiểu 100.000 sẽ loại hết vùng. Nhấn **Mặc định → Phân đoạn ảnh** để thử lại.
+- F1 hiển thị `—` khi chưa có nhãn đúng; đây không phải điểm 0. IoU, Dice, F1 và PQ cao hơn thường tốt hơn; sai số đếm, Split (chia thừa) và Merge (gộp vật thể) thấp hơn tốt hơn.
+- Zoom (phóng to) và Pan (di chuyển) được tô sáng khi bật. Bật sửa marker sẽ tắt chế độ này để thao tác chuột không bị lẫn. Vòng tròn trên ảnh marker giúp nhìn rõ vị trí khởi tạo, không làm thay đổi dữ liệu TIFF.
+
+Phần mềm giúp chạy thí nghiệm và thu số liệu. Báo cáo khoảng 30 trang và slide khoảng 10 trang vẫn là sản phẩm chính cần biên soạn riêng; giao diện không thay thế nội dung nghiên cứu.
+
 Ảnh thật: chọn **Bộ ảnh & nhãn**, chọn BBBC039 và split, bấm **Lọc danh sách**, nhấp đúp ảnh muốn mở. Ảnh và nhãn đúng được nạp cùng nhau. Với ảnh ngoài dataset, dùng **Chọn ảnh** và **Nạp ground truth**. Ground truth BBBC039 đã giải mã nằm trong `data/bbbc039/labels`.
 
 ## Làm việc trong một ứng dụng
@@ -48,7 +60,7 @@ Ví dụ đã hoàn thành nằm trong `outputs/v2_compare_bbbc039_test`, `outpu
 
 **Kiểm chứng Watershed trên cùng đầu vào:** Python cung cấp elevation float32, marker có nhãn, mask nhị phân và liên thông cho `Watershed.computeWatershed` của MorphoLibJ. Tắt dams ở cả hai bên. Đây là phép kiểm tra bước Watershed riêng, không chứng minh toàn bộ pipeline độc lập giống nhau. FIFO và cách xử lý plateau có thể tạo ranh giới khác.
 
-**Workflow Fiji độc lập:** nhấn **Workflow Fiji độc lập**. Fiji tự thực hiện lượng tử hóa 8-bit, Gaussian, Otsu, phần tử cấu trúc vuông, opening bằng reconstruction, fill holes, lọc diện tích, ImageJ EDM, extended maxima, gán nhãn và Watershed. Fiji lưu từng ảnh `native_*.tif` để minh họa. Đây là baseline cố định; nó sử dụng radius, sigma, h, min_area, polarity và connectivity hiện có, còn thao tác morphology/shape/mode/manual threshold/fill_holes của Python không được áp dụng cho baseline này. Quy ước cụ thể được ghi trong `native_parameters.txt`.
+**Workflow (quy trình) Fiji độc lập:** nhấn **Quy trình Fiji độc lập**. Fiji tự thực hiện lượng tử hóa 8-bit, Gaussian, Otsu, phần tử cấu trúc vuông, opening bằng reconstruction, fill holes, lọc diện tích, ImageJ EDM, extended maxima, gán nhãn và Watershed. Fiji lưu từng ảnh `native_*.tif` để minh họa. Đây là baseline cố định; nó sử dụng radius, sigma, h, min_area, polarity và connectivity hiện có, còn thao tác morphology/shape/mode/manual threshold/fill_holes của Python không được áp dụng cho baseline này. Quy ước cụ thể được ghi trong `native_parameters.txt`.
 
 Cả hai cách đều sử dụng Java và JAR thực trong `C:/Tools/Fiji`. Chọn **Thư mục Fiji** nếu cài ở vị trí khác. Lần đầu chương trình biên dịch hai lớp adapter vào `build`; các lần sau tái sử dụng. Không sửa cài đặt Fiji hoặc env `ai`.
 
@@ -89,7 +101,7 @@ Tab **Benchmark** hỗ trợ:
 
 - **Xử lý thư mục ảnh**: chạy cấu hình hiện tại trên TIFF/PNG/JPG/BMP; bỏ qua file có hậu tố `_gt`. Tự ghép nhãn tùy chọn `tênảnh_gt.tif`, `.tiff` hoặc `.png`. Mỗi ảnh có thư mục xuất riêng, lỗi một ảnh được ghi vào `batch.csv` và các ảnh còn lại vẫn được xử lý.
 - **Chạy 4 phương pháp × 2 bản**: so sánh ccl/raw/hmax/adaptive và custom/library trên dataset đã chọn. Có một lượt warm-up và số lần lặp do người dùng đặt; thời gian loại đọc/ghi và metric.
-- **Khảo sát h trên validation**: h thuộc {0.5,1,2,4,6}, bản library/hmax, chọn macro F1 cao nhất; lưu `selected_parameters.json`. Nạp file đó để dùng. Chức năng này cố định validation, không dùng test để chọn tham số.
+- **Khảo sát h trên validation**: h thuộc {0.5,1,2,4,6}, dùng bản cài đặt đang chọn và phương pháp hmax, chọn macro F1 cao nhất; lưu `selected_parameters.json` với đúng engine/hmax đã khảo sát. Nạp file đó để dùng. Chức năng này cố định validation, không dùng test để chọn tham số. Chọn library nếu muốn khảo sát nhanh hơn.
 
 Không chạy benchmark lúc máy đang tải nặng nếu muốn đo thời gian dùng trong báo cáo. Chương trình ghi môi trường và thông số, nhưng không đo riêng mức sử dụng CPU/RAM. Thời gian pipeline CCL hiện vẫn bao gồm việc tạo ảnh distance/marker để phục vụ giao diện; vì vậy không coi đó là thời gian tối thiểu của riêng BFS.
 
