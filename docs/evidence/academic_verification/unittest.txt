@@ -1,0 +1,34 @@
+test_adaptive_both_engines_multiple_components (test_algorithms.AlgorithmsTest.test_adaptive_both_engines_multiple_components) ... ok
+test_ccl_connectivity_and_id_independence (test_algorithms.AlgorithmsTest.test_ccl_connectivity_and_id_independence) ... ok
+test_distance_transform_exact_with_background_frame (test_algorithms.AlgorithmsTest.test_distance_transform_exact_with_background_frame) ... ok
+test_empty_and_full_pipeline (test_algorithms.AlgorithmsTest.test_empty_and_full_pipeline) ... ok
+test_h_maxima_against_library (test_algorithms.AlgorithmsTest.test_h_maxima_against_library) ... ok
+test_morphology_against_scipy_asymmetric_and_edges (test_algorithms.AlgorithmsTest.test_morphology_against_scipy_asymmetric_and_edges) ... ok
+test_pipeline_engines_intermediate_agreement (test_algorithms.AlgorithmsTest.test_pipeline_engines_intermediate_agreement) ... ok
+test_reconstruction_gray_fixed_point_and_library (test_algorithms.AlgorithmsTest.test_reconstruction_gray_fixed_point_and_library) ... ok
+test_watershed_disconnected_seed_invariants_and_library (test_algorithms.AlgorithmsTest.test_watershed_disconnected_seed_invariants_and_library) ... ok
+test_empty_conventions_and_invalid_inputs (test_algorithms.MetricsTest.test_empty_conventions_and_invalid_inputs) ... ok
+test_merge_and_split_detected_despite_perfect_foreground (test_algorithms.MetricsTest.test_merge_and_split_detected_despite_perfect_foreground) ... ok
+test_permuted_ids_not_false_difference (test_algorithms.MetricsTest.test_permuted_ids_not_false_difference) ... ok
+test_native_fiji_workflow_exports_every_operator (test_fiji.FijiIntegrationTest.test_native_fiji_workflow_exports_every_operator) ... ok
+test_shared_inputs_and_independent_java_metrics (test_fiji.FijiIntegrationTest.test_shared_inputs_and_independent_java_metrics) ... ok
+test_batch_mixed_rgb_gray_ground_truth_and_bad_image (test_gui_integration.DesktopWorkflowTest.test_batch_mixed_rgb_gray_ground_truth_and_bad_image) ... ok
+test_benchmark_and_parameter_sweep (test_gui_integration.DesktopWorkflowTest.test_benchmark_and_parameter_sweep) ... ok
+test_choices_roundtrip_through_actual_combobox (test_gui_integration.DesktopWorkflowTest.test_choices_roundtrip_through_actual_combobox) ... ok
+test_empty_result_stale_parameters_and_no_truth (test_gui_integration.DesktopWorkflowTest.test_empty_result_stale_parameters_and_no_truth) ... ok
+test_fiji_export_restore_and_invalid_import (test_gui_integration.DesktopWorkflowTest.test_fiji_export_restore_and_invalid_import) ... ok
+test_manual_markers_apply_and_restore (test_gui_integration.DesktopWorkflowTest.test_manual_markers_apply_and_restore) ... ok
+test_research_four_backends_and_dataset_browser (test_gui_integration.DesktopWorkflowTest.test_research_four_backends_and_dataset_browser) ... ok
+test_close_cancels_worker_and_suppresses_callback (test_gui_tasks.GuiTasksTest.test_close_cancels_worker_and_suppresses_callback) ... ok
+test_result_returns_through_main_thread_poll (test_gui_tasks.GuiTasksTest.test_result_returns_through_main_thread_poll) ... ok
+test_cancel_child_is_reaped (test_workspace.WorkspaceTest.test_cancel_child_is_reaped) ... ok
+test_cancel_partial_study_is_marked_cancelled (test_workspace.WorkspaceTest.test_cancel_partial_study_is_marked_cancelled) ... ok
+test_manual_markers_and_validation (test_workspace.WorkspaceTest.test_manual_markers_and_validation) ... ok
+test_portable_session_and_html_escaped (test_workspace.WorkspaceTest.test_portable_session_and_html_escaped) ... ok
+test_reconstruction_randomized_float_and_flat_cases (test_workspace.WorkspaceTest.test_reconstruction_randomized_float_and_flat_cases) ... ok
+test_study_ablation_and_deterministic_corruptions (test_workspace.WorkspaceTest.test_study_ablation_and_deterministic_corruptions) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 29.891s
+
+OK

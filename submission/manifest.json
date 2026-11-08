@@ -1,0 +1,18 @@
+{
+  "BAO_CAO_NHOM_1.docx": {
+    "bytes": 273825,
+    "sha256": "fc79c65d00a629c10f96f6c7ab4ccc3167a0875090334146c8894a91151f05c8"
+  },
+  "BAO_CAO_NHOM_1.pdf": {
+    "bytes": 561553,
+    "sha256": "7b79c60944cdd3022503ef38363aac1f1fbe50a8025d514b24a7ef2a0a638a31"
+  },
+  "PRESENTATION_NHOM_1.pptx": {
+    "bytes": 170515,
+    "sha256": "b4a873ad0067c76d6296b6094b39291e0de0239bc77464bf6b21825edc78a1f4"
+  },
+  "pdf_pages": 32,
+  "slides": 10,
+  "docx_tables": 8,
+  "docx_unresolved_directives": []
+}
