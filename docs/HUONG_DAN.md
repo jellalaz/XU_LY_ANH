@@ -2,6 +2,8 @@
 
 Thực hành Fiji lần đầu: xem [hướng dẫn 6 bước](../submission/HUONG_DAN_FIJI_TUNG_BUOC.md). Báo cáo chính hiện là [PDF LaTeX](../submission/BAO_CAO_NHOM_1.pdf), có mục lục, hình và số trang tự động; nguồn trong `submission/latex`.
 
+Học Fiji từ ảnh gốc và hiểu từng lựa chọn: [hướng dẫn đầy đủ](../submission/HUONG_DAN_FIJI_DAY_DU.md), có phân biệt Threshold/Auto/Auto Threshold, tác dụng từng hộp thoại và script Groovy chạy toàn quy trình.
+
 Ứng dụng hỗ trợ nghiên cứu phân đoạn từng đối tượng trong ảnh 2D bằng hình thái học và Watershed. Chạy `launch_app.cmd` để mở. Phần mềm sử dụng env `ai` hiện có; dữ liệu và kết quả nằm trong thư mục con của dự án.
 
 ## Thí nghiệm đầu tiên

@@ -1,5 +1,7 @@
 # Thực hành Fiji lần đầu — làm lần lượt 6 bước
 
+**Muốn học từ ảnh gốc và hiểu từng nút, kể cả Threshold/Auto/Auto Threshold:** xem [Hướng dẫn Fiji đầy đủ](HUONG_DAN_FIJI_DAY_DU.md). Tài liệu này là đường tắt kiểm chứng khi đã có elevation/marker/mask từ Python.
+
 Bạn đã chạy Python thành công và có thư mục `D:\XU_LY_ANH\outputs\demo_shared\fiji`. Bây giờ mục tiêu là **tự bấm trong Fiji để tách ảnh thành 7 vật thể**, rồi lưu kết quả. Các bước dưới đây chưa cần mở app MorphoLab.
 
 ## Bước 1 — Mở Fiji

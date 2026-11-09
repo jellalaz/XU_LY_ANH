@@ -1,0 +1,44 @@
+{
+  "script": "fiji/Full_Pipeline_Tutorial.groovy",
+  "native_arrays_exact": {
+    "native_binary.tif": true,
+    "native_closing.tif": true,
+    "native_components.tif": true,
+    "native_dilation.tif": true,
+    "native_distance.tif": true,
+    "native_elevation.tif": true,
+    "native_erosion.tif": true,
+    "native_markers.tif": true,
+    "native_mask.tif": true,
+    "native_opening.tif": true,
+    "native_reconstruction.tif": true,
+    "morpholibj_labels.tif": true
+  },
+  "python_metrics": {
+    "foreground_iou": 0.9801324503311258,
+    "foreground_dice": 0.9899665551839465,
+    "object_precision": 1.0,
+    "object_recall": 1.0,
+    "object_f1": 1.0,
+    "panoptic_quality": 0.9609947216379141,
+    "mean_matched_iou": 0.9609947216379141,
+    "true_objects": 7,
+    "predicted_objects": 7,
+    "tp": 7,
+    "fp": 0,
+    "fn": 0,
+    "count_absolute_error": 0,
+    "split_objects": 0,
+    "merge_objects": 0,
+    "iou_threshold": 0.5,
+    "split_merge_overlap_fraction": 0.1
+  },
+  "groovy_metrics": {
+    "predicted_objects": "7",
+    "foreground_iou": "0.9801324503311258",
+    "foreground_dice": "0.9899665552",
+    "true_objects": "7"
+  },
+  "mode": "actual Groovy/Fiji JARs, showStages=false",
+  "date": "2026-11-09"
+}

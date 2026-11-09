@@ -1,5 +1,9 @@
 # Biên bản kiểm tra hồ sơ — 08/11/2026
 
+## Bổ sung bài thực hành Fiji đầy đủ ngày 09/11/2026
+
+Thêm `HUONG_DAN_FIJI_DAY_DU.md`, giải thích các mục chọn từ ảnh gốc đến nhãn và metric, cùng `fiji/Full_Pipeline_Tutorial.groovy` chạy độc lập trong Fiji. Đã thực thi Groovy trên `synth_00.tif` với showStages=false: Otsu=100, mask=5 vùng, marker=7, nhãn=7; F1=1, IoU=0.9801324503, Dice=0.9899665552. Có 12 TIFF trùng từng giá trị với native Java baseline đã đo. CSV Groovy được đối chiếu với metric Python, kết quả ở `docs/evidence/academic_verification/fiji_tutorial_pipeline.json`. Đây là pipeline native, khác shared có IoU≈0.981397; hướng dẫn phân biệt rõ. Các hộp thoại được đối chiếu với bản JAR cài trên máy; không tuyên bố đã tự động click qua mọi tùy chọn GUI.
+
 ## Cập nhật báo cáo LaTeX ngày 09/11/2026
 
 Báo cáo chính `BAO_CAO_NHOM_1.pdf` nay được biên dịch thật từ `submission/latex/main.tex` bằng Tectonic/XeTeX. Bản này thay PDF ReportLab cũ; Word vẫn là phiên bản trước bổ sung LaTeX. Nội dung mới có bìa, mục lục tự động, danh mục hình/bảng, 6 chương, công thức/hình/bảng đánh số, tài liệu tham khảo, phụ lục, chương thực hành Fiji và hình app hỗ trợ.
