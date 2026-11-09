@@ -1,5 +1,15 @@
 # Biên bản kiểm tra hồ sơ — 08/11/2026
 
+## Cập nhật báo cáo LaTeX ngày 09/11/2026
+
+Báo cáo chính `BAO_CAO_NHOM_1.pdf` nay được biên dịch thật từ `submission/latex/main.tex` bằng Tectonic/XeTeX. Bản này thay PDF ReportLab cũ; Word vẫn là phiên bản trước bổ sung LaTeX. Nội dung mới có bìa, mục lục tự động, danh mục hình/bảng, 6 chương, công thức/hình/bảng đánh số, tài liệu tham khảo, phụ lục, chương thực hành Fiji và hình app hỗ trợ.
+
+Các hình khoa học mới lấy từ TIFF/kết quả thực nghiệm; ảnh giao diện Fiji/app là các ảnh người học đã cung cấp ở những lượt thực hành trước. Không dùng ảnh giao diện để tạo số liệu định lượng. Tên trường và lựa chọn hộp thoại Fiji đã được đối chiếu với `plugins.config` và bytecode `MarkerControlledWatershed3DPlugin` trong MorphoLibJ 1.6.5: bỏ Binary markers, Calculate dams, Use diagonal connectivity; Compactness=0 cho giao thức shared 2D liên thông 4.
+
+Đã biên dịch lại để cập nhật mục lục/liên kết, kiểm tra log không còn công thức/tham chiếu chưa giải quyết, thiếu glyph hoặc dòng tràn lề; render các trang để kiểm tra bố cục. Chi tiết số trang, nhãn trang và hash PDF trong `docs/evidence/academic_verification/latex_validation.json`. Hướng dẫn mới `HUONG_DAN_FIJI_TUNG_BUOC.md` dành riêng cho người dùng lần đầu. Không thay thuật toán hay số liệu nghiên cứu trong đợt chỉnh báo cáo.
+
+Các ghi nhận phía dưới mô tả bộ hồ sơ trước khi chuyển LaTeX, gồm kết quả test phần mềm vẫn được giữ nguyên.
+
 Phạm vi: hoàn thiện phần học thuật của đề tài nhóm 1; giao diện hiện có là công cụ hỗ trợ, không phát triển thêm tính năng app trong đợt này.
 
 ## Kết quả đã kiểm tra

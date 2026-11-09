@@ -1,4 +1,4 @@
-"""Create a searchable PDF from the final DOCX, with independent PDF layout QA."""
+"""Legacy Word-to-PDF layout. The primary report now lives in submission/latex."""
 from pathlib import Path
 from xml.sax.saxutils import escape
 from docx import Document
@@ -15,7 +15,7 @@ from reportlab.lib.pagesizes import A4
 import io,json,re
 
 ROOT=Path(__file__).resolve().parents[1]
-dest=ROOT/'submission/BAO_CAO_NHOM_1.pdf'
+dest=ROOT/'outputs/BAO_CAO_NHOM_1_WORD_LEGACY.pdf'
 for name,file in [('TimesVN','times.ttf'),('TimesVNBold','timesbd.ttf'),('ArialVN','arial.ttf'),('ArialVNBold','arialbd.ttf'),('Code','consola.ttf'),('Math','seguisym.ttf')]:
     pdfmetrics.registerFont(TTFont(name,'C:/Windows/Fonts/'+file))
 normal=ParagraphStyle('body',fontName='TimesVN',fontSize=11.5,leading=15,spaceAfter=7,textColor=black)

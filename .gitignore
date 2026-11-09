@@ -15,3 +15,12 @@ outputs/
 build/
 *.class
 *.log
+
+# LaTeX build intermediates (final PDF and source remain tracked)
+submission/latex/*.aux
+submission/latex/*.toc
+submission/latex/*.lof
+submission/latex/*.lot
+submission/latex/*.out
+submission/latex/*.xdv
+submission/latex/main.pdf

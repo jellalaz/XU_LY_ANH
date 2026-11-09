@@ -4,9 +4,10 @@ Nghiên cứu, cài đặt, thực nghiệm và đánh giá **phân đoạn đ�
 
 ## Bắt đầu từ phần bài tập lớn
 
-- [Báo cáo Word](submission/BAO_CAO_NHOM_1.docx) và [PDF](submission/BAO_CAO_NHOM_1.pdf): lý thuyết, cài đặt, Fiji, dữ liệu, kết quả và giới hạn.
+- [Báo cáo PDF LaTeX](submission/BAO_CAO_NHOM_1.pdf): bản chính có chương/mục, mục lục, số trang/hình/bảng/công thức. [Nguồn LaTeX](submission/latex/README.md) có thể biên dịch bằng XeLaTeX/Overleaf. Bản Word trước đó giữ để tham khảo, chưa đồng bộ phần bổ sung LaTeX.
 - [Presentation 10 slide](submission/PRESENTATION_NHOM_1.pptx), có ghi chú và [lời thuyết trình](submission/THUYET_TRINH.md).
 - [Hướng dẫn chạy và test từng bước](submission/HUONG_DAN_CHAY_VA_TEST.md): lệnh cụ thể, đầu ra mong đợi, thực hành Fiji, benchmark, xử lý lỗi và kịch bản demo.
+- [Thực hành Fiji lần đầu](submission/HUONG_DAN_FIJI_TUNG_BUOC.md): mở 3 TIFF → chọn đúng hộp thoại MorphoLibJ 1.6.5 → lưu nhãn → đọc điểm.
 - [Đối chiếu yêu cầu](docs/DOI_CHIEU_YEU_CAU.md) và [biên bản kiểm tra bộ bàn giao](submission/BIEN_BAN_KIEM_TRA.md).
 
 Trong Anaconda Prompt: `conda activate ai`, `cd /d D:\XU_LY_ANH`, rồi `python scripts/academic_smoke.py`. Demo này chạy Python, Java/Fiji và script Groovy thật, kiểm tra kết quả 7/5/0 đối tượng, tự xuất thư mục kết quả mới. Không cần mở app để thực hiện phần nghiên cứu.

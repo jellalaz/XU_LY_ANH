@@ -1,5 +1,7 @@
 # Hướng dẫn chạy, kiểm chứng và bảo vệ — PTIT nhóm 1
 
+**Mới học Fiji:** mở [Thực hành Fiji lần đầu — 6 bước](HUONG_DAN_FIJI_TUNG_BUOC.md). Báo cáo chính đã chuyển sang PDF biên dịch LaTeX; phần thực hành nằm ở Chương 4, phần app ở Chương 6. Word là bản trước khi bổ sung LaTeX.
+
 Đề tài: **Phân đoạn đối tượng bằng hình thái học toán học và Watershed**. Dùng Python để tự cài và thực nghiệm; dùng **Fiji/ImageJ + MorphoLibJ** làm nền tảng tham chiếu. Không có bước huấn luyện mô hình AI. Không cần mở ứng dụng MorphoLab để chạy phần nghiên cứu.
 
 ## 1. Mở đúng môi trường
@@ -101,7 +103,7 @@ Có thêm script dùng chung `fiji/ReplayWatershed.groovy`: mở bằng Script E
 
 1. Mở ba ảnh `elevation.tif`, `markers.tif`, `mask.tif` trong thư mục Fiji nói trên.
 2. Vào **Plugins → MorphoLibJ → Segmentation → Marker-controlled Watershed**. Nếu tên lệnh hơi khác ở phiên bản khác, gõ `Marker-controlled Watershed` vào ô tìm lệnh Fiji.
-3. Chọn Input = elevation, Marker = markers, Mask = mask; Connectivity = 4; bỏ **Calculate dams** (không tạo đường phân cách nền).
+3. Chọn Input = elevation, Marker = markers, Mask = mask; Compactness = 0. Trên MorphoLibJ 1.6.5, bỏ **Use diagonal connectivity** để dùng liên thông 4; bỏ **Binary markers** vì marker đã mang ID; bỏ **Calculate dams** để không tạo đường phân cách nền. Nếu phiên bản khác có danh sách Connectivity, chọn 4.
 4. Chạy; lưu kết quả ở một tên TIFF mới, sau đó dùng lệnh `evaluate` tương tự.
 
 Giữ nguyên dấu âm của elevation. Distance dương có đỉnh tại tâm; dùng −distance để tâm là đáy vùng ngập. Không thay liên thông hoặc làm tròn ảnh giữa hai lần đối chiếu rồi đòi kết quả giống nhau.
