@@ -1,4 +1,4 @@
-"""Native desktop interface; all analysis calls the same CLI/core functions."""
+"""Giao diện máy tính; nút bấm gọi cùng phần lõi với lệnh Terminal."""
 from pathlib import Path
 from dataclasses import asdict
 from datetime import datetime
@@ -610,6 +610,7 @@ class App:
         return manifest,limit,repeats,self.parameters()
 
     def benchmark(self):
+        """Đo nhiều lần sau làm nóng, không cộng đọc ghi/metric vào thời gian thuật toán Python."""
         try: manifest,limit,repeats,params=self.experiment_inputs()
         except Exception as exc: self.error(str(exc)); return
         from .benchmark import benchmark
@@ -637,6 +638,7 @@ class App:
         self.status.set('Benchmark hoàn tất · '+str(folder))
 
     def sweep(self):
+        """Khảo sát các mức h trên validation; không chọn tham số bằng nhãn test."""
         try: manifest,limit,repeats,params=self.experiment_inputs()
         except Exception as exc: self.error(str(exc)); return
         from .benchmark import sweep

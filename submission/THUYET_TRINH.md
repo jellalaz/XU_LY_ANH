@@ -1,39 +1,121 @@
-## Slide 1
+# Kịch bản thuyết trình 15 phút
 
-40 giây. Giới thiệu đề tài nhóm 1. Mục tiêu: hiểu và tự cài đặt các phép hình thái, tạo marker và tách từng vật thể, rồi kiểm chứng bằng Fiji/MorphoLibJ. Đây là xử lý ảnh cổ điển, không huấn luyện mạng học sâu. Ứng dụng chỉ hỗ trợ thao tác; bằng chứng chính là mã nguồn, dữ liệu và báo cáo. Nguồn yêu cầu: đề bài và ảnh phân nhóm do người học cung cấp.
+10 slide, tổng 900 giây. Thời gian gồm thao tác ngắn ở slide 4 và 6; không chạy lại toàn bộ 50 ảnh tại lớp. Luyện đọc và bấm thử để điều chỉnh tốc độ nói, không cố đọc nguyên văn mọi ghi chú. Khi hết 15 phút chuyển sang hỏi đáp.
 
-## Slide 2
+## Slide 1: Đề tài và mục tiêu
 
-50 giây. synth_00 có 7 vật thể, gồm 2 cặp chạm nhau. Connected components cho 5 vùng; Watershed với marker phù hợp cho 7. Mỗi đối tượng nhận một ID; có thể đếm và đo diện tích, tâm. Không tự nhận biết tên người, xe hay loại tế bào. Nguồn: outputs/input_output_example; data/synthetic/synth_00.tif và synth_00_gt.tif. Fiji trong hình là kết quả MorphoLibJ thực chạy. F1=1 trên ví dụ không chứng minh mọi ảnh đều tốt.
+0:00–0:45 — 45 giây.
 
-## Slide 3
+Nhóm 1 nghiên cứu phân đoạn đối tượng bằng hình thái học toán học và Watershed. Đầu vào là ảnh xám hai chiều; đầu ra là ảnh nhãn, nền 0, mỗi ID dương tương ứng một đối tượng. Bài toán cần tách các vật đang chạm nhau, không chỉ phát hiện vật sáng trên nền tối.
 
-70 giây. Giải thích phần tử cấu trúc B; nền ngoài ảnh bằng 0. Erosion: co. Dilation: giãn. Opening = co rồi giãn; closing = giãn rồi co. Reconstruction giãn marker nhưng bị chặn bởi mask đến hội tụ. Opening by reconstruction khôi phục vùng còn seed. Connected components gán ID các vùng nối nhau theo 4/8 lân cận. Mã tự viết: morpholab/algorithms.py. Nguồn: MorphoLibJ manual v1.6.5, https://imagej.net/plugins/morpholibj ; tài liệu PTIT tại materials/downloads/ptit_morphology.pdf.
+Bài trình bày đi từ lý thuyết tới thao tác tay trong Fiji, sau đó là Python tự cài, kiểm chứng và số liệu nhiều ảnh. App được giới thiệu cuối như một cách thao tác thuận tiện. Đây là xử lý ảnh cổ điển, không huấn luyện mô hình học sâu.
 
-## Slide 4
+Nguồn: đề bài; báo cáo LaTeX của nhóm.
 
-70 giây. Distance transform: khoảng cách Euclid tới nền. Tâm vùng thường có giá trị lớn. E=-D biến tâm thành đáy vùng. H-maxima dùng reconstruction loại cực đại nông, tránh thừa marker. Watershed lan nhãn bằng heap theo cost(q)=max(cost(p),E(q)). Bản tự cài không tạo dams; xử lý hòa bằng thứ tự vào hàng. Fiji có thể khác ở plateau. EDT dùng bao dưới parabola tuyến tính theo số pixel. Nguồn: algorithms.py; https://cs.brown.edu/people/pfelzens/dt/index.html ; https://imagej.net/plugins/morpholibj.
+## Slide 2: Hình thái học và phần tử cấu trúc
 
-## Slide 5
+0:45–2:25 — 100 giây.
 
-70 giây. Shared dùng cùng elevation, markers, mask và liên thông: so sánh bước Watershed. Native chạy Fiji từ ảnh xám: Gaussian, Otsu, hình thái, EDM, extended maxima, Watershed. Native lượng tử 8-bit và SE vuông; Python mặc định float và SE đĩa. Không quy chênh lệch F1 về riêng Watershed. Java adapter gọi JAR thật. Fiji tự tính IoU, Dice và số vùng trong fiji_metrics.csv. Script Groovy chạy lại bằng Script Editor. Nguồn fiji/MorphoBridge.java, NativePipeline.java, ReplayWatershed.groovy và MorphoLibJ manual.
+Phần tử cấu trúc là tập vị trí lân cận được dùng để tính giá trị mới cho pixel tâm. Square radius 1 có kích thước 3×3, radius 4 là 9×9. Mỗi cửa sổ chỉ tính một pixel đầu ra, ảnh không bị thu nhỏ kích thước.
 
-## Slide 6
+Co lấy MIN, giãn lấy MAX theo giá trị pixel. Với vật 255 và nền 0, co chỉ giữ tâm trắng khi toàn bộ lân cận được xét đều trắng; giãn chỉ cần có một pixel trắng. Opening là co rồi giãn, thường loại chi tiết trắng nhỏ. Closing là giãn rồi co, thường khép khe tối và có thể nối hai vật gần nhau.
 
-65 giây. 18 ảnh tổng hợp có GT: 6 validation, 12 test. BBBC039: 200 ảnh nhân tế bào U2OS, chia chính thức 100 training, 50 validation, 50 test. Không train mô hình. Khảo sát 6 validation; bảng chính 50 test × 4 cách =200 dòng. F1 ghép một-một IoU>=0.5, trung bình theo ảnh. IoU/Dice tiền cảnh không đủ nhận diện lỗi chia/gộp. Nguồn https://bbbc.broadinstitute.org/BBBC039 ; manifest, metrics.py, studies.py.
+Mở bằng tái tạo dùng phần còn lại sau co làm seed, ảnh ban đầu làm mask. Nó lan tới ổn định trong mask, khôi phục vùng liên thông còn seed và loại vùng mất hết seed. Opening thường không bảo đảm giữ nguyên hình dạng. Hình minh họa trên slide dùng cùng Square radius 1 để so phép toán công bằng.
 
-## Slide 7
+Nguồn: morpholab/algorithms.py; hình morphology.png từ Fiji native; https://imagej.net/plugins/morpholibj.
 
-75 giây. F1 theo ảnh: custom0.7086889, library0.7053689, shared0.7188375, native0.8917349. CI95 bootstrap1000 lần theo ảnh: [.6807,.7305], [.6771,.7277], [.6914,.7386], [.8592,.9132]. Ba cách đầu cùng mask nên IoU tiền cảnh=.8954, native=.8910. Mặt nạ tốt chưa đủ tách đúng từng vật. Khác biệt toàn pipeline, chưa chứng minh một kernel luôn tốt hơn. Nguồn docs/evidence/v2_compare_bbbc039_test/summary.csv và per_image.csv.
+## Slide 3: Fiji từ ảnh gốc tới mask
 
-## Slide 8
+2:25–4:05 — 100 giây.
 
-70 giây. Trên 6 validation: baselineF1=.6663, bỏ Gaussian=.6884, rawmarkers=.1563, CCL=.8168. Đây là4/7 biến thể; bảng đầy đủ trong báo cáo. CCL tốt hơn cho thấy baseline còn chia thừa. Blur sigma3 làmF1xuống.6018. Không khẳng định mọi bước hình thái đều cải thiện. Nguồn docs/evidence/v2_ablation_bbbc039/summary.csv và v2_robustness_bbbc039/summary.csv. Các biến đổi cùng ảnh không là mẫu độc lập.
+Mở synth_00.tif, kích thước 192×192, một kênh 16-bit, và giữ ảnh gốc. Trên bản sao, khoảng dữ liệu là 2749–64456, chuyển về 8-bit theo quy tắc đã ghi. Đây là lượng tử hóa có mất thông tin, không phải yêu cầu bắt buộc của Watershed.
 
-## Slide 9
+Gaussian sigma 1 giảm nhiễu. Trong Threshold chọn Otsu, bật Dark background. Auto tính ngưỡng, vùng đỏ chỉ để xem trước; Apply mới tạo mask vật 255/nền 0. Tái tạo giữ hình dạng vùng còn seed. Fill Holes lấp nền kín bên trong vật. Size Opening loại cả vùng liên thông nhỏ hơn 25 pixel; hai vật đang dính được tính chung diện tích. Analyze Regions chỉ đo, không lọc.
 
-70 giây. Bộ unittest29 trường hợp có kiểm chứng Fiji thật, metric, GUI. Reconstruction5 lần sauwarmup1; mask1,seedtâm, liên thông4; mỗi cặp kết quả bằng nhau. QueuePython chậm hơn synchronousSciPy biên dịch. Đây là so sánh triển khai, không tách riêng độ phức tạp. Không so nativeIOtime trực tiếp với kernelPython. Nguồn docs/evidence/academic_checks/timing_summary.csv, protocol.json ; scripts/academic_checks.py ; tests.
+Kết quả CCL có 5 vùng dù ảnh có 7 vật, vì hai cặp chạm nhau bị tính chung. Đây là vấn đề Watershed sẽ giải quyết. Các ảnh thực hành có thử nhiều bán kính được ghi riêng trong báo cáo, không trộn với bộ đối chiếu cùng bán kính trên slide trước.
 
-## Slide 10
+Nguồn: TIFF và nhật ký trong docs/evidence/fiji_manual.
 
-60 giây. Đóng góp: lý thuyết8 nội dung; tự cài thuật toán; workflowFiji thật; dữ liệu và định lượng; báo cáo và10slide. Demo academic_smoke tạo3casePython vàshared/nativeFiji, mởlabelsCSV. Giới hạn: nền phức tạp, marker nhạy, tốc độPython, không nhận dạng ngữ nghĩa. Có thể cải thiệnmarker và vònglặp, nhưng cần validation độc lập. GUI chỉ hỗ trợ. Nguồn đầy đủ trong báo cáo và https://github.com/jellalaz/XU_LY_ANH.
+## Slide 4: Distance, marker và Watershed trong Fiji
+
+4:05–5:55 — 110 giây, gồm khoảng 35 giây thao tác.
+
+Distance Map tính khoảng cách từ pixel trong vật tới nền gần nhất. Vùng sáng gần tâm có khoảng cách lớn, không phải ảnh bị làm mờ. Đặt EDM output 32-bit để giữ các giá trị lẻ. Extended Maxima với h=2 loại những đỉnh nông; h không phải số lượng vật hay ngưỡng sáng tuyệt đối. Gán nhãn các cực đại thành 7 marker.
+
+Tạo địa hình E=-D để tâm thành vùng thấp. Trong MorphoLibJ, chọn Input=elevation, Marker=ảnh ID và Mask=mask sạch. Đặt compactness 0, bỏ Binary markers, Calculate dams và Use diagonal connectivity. Thu được 7 nhãn. Nêu rằng file elevation lưu trước phép nhân đã được phát hiện và xuất lại; nhãn làm tay khớp lần chạy lại trên địa hình âm.
+
+Thao tác: mở ba TIFF trong docs/evidence/fiji_manual, gọi Marker-controlled Watershed và kiểm tra các trường trước OK. Nếu hết thời gian, dùng ảnh đã lưu và chỉ vào bảng 7 nhãn. Không thay marker bằng ground truth để ép kết quả.
+
+Nguồn: docs/evidence/fiji_manual/verification.json và ảnh manual_watershed.png.
+
+## Slide 5: Định lượng ngay trong Fiji
+
+5:55–7:35 — 100 giây.
+
+Ta nhân bản nhãn đúng và nhãn dự đoán, chuyển các ID dương thành một lớp tiền cảnh 255, nền 0. Không dùng Otsu trên các ID vì số nhãn không phải cường độ vật thể. Dùng Label Overlap Measures đo Jaccard và Dice. Bảng chụp trực tiếp trong Fiji cho IoU 0,980451 và Dice 0,990129.
+
+Python đọc đúng TIFF làm tay và tính lại hai chỉ số, khớp trong sai số hiển thị. Với hai ảnh nhãn gốc, Python còn ghép từng vật tại IoU≥0,5: 7 cặp đúng, không dự đoán thừa hoặc bỏ sót, F1=1. Điều đó không có nghĩa mọi pixel đúng, vì IoU vẫn thấp hơn 1.
+
+Phân biệt bảng tiền cảnh có một nhãn 255 với bảng hình học có 7 đối tượng. LUT chỉ đổi màu hiển thị; trước đó Spectrum làm nhãn 7 và nền cùng màu đỏ nhưng đối tượng không hề mất. Cần đọc giá trị pixel và bảng nhãn thay vì suy luận bằng màu.
+
+Nguồn: ui_overlap.png, fiji_foreground_metrics.csv, verification.json trong bộ minh chứng Fiji làm tay.
+
+## Slide 6: Cài Python và kiểm chứng
+
+7:35–9:15 — 100 giây, gồm khoảng 25 giây mở code/lệnh.
+
+algorithms.py chứa hình thái nhị phân tự cài, gán nhãn BFS, reconstruction bằng hàng đợi, EDT tách trục bằng bao dưới parabol và Watershed dùng heap. Gaussian, Otsu, đọc ghi và thống kê dùng thư viện, được công bố rõ. Code có chú thích tiếng Việt để theo dõi từng bước.
+
+Watershed lan nhãn theo mức ngập lớn nhất trên đường đi; khi hòa dùng thứ tự đến. Pipeline ghép các bước; metrics ghép một-một các đối tượng trước khi chấm. Không cần hai ảnh có cùng màu hoặc cùng thứ tự ID.
+
+Fiji shared nhận cùng địa hình, marker, mask và liên thông để kiểm tra riêng bước Watershed. Fiji native tự xử lý từ ảnh xám, khác ở lượng tử hóa 8-bit, SE vuông và ImageJ EDM, nên là đối chiếu toàn quy trình. Groovy giúp tự động hóa các lệnh sau khi đã hiểu menu.
+
+Thao tác: mở hàm watershed trong VS Code hoặc chạy lệnh evaluate đã chuẩn bị để chấm TIFF Fiji. Không cần mở app.
+
+Nguồn: morpholab/algorithms.py, pipeline.py, metrics.py, fiji.py; fiji/NativePipeline.java.
+
+## Slide 7: Dữ liệu và giao thức
+
+9:15–10:50 — 95 giây.
+
+Ngoài 18 ảnh tổng hợp, nhóm dùng BBBC039 gồm 200 ảnh nhân tế bào U2OS 16-bit, kích thước 520×696 và nhãn đúng. Giữ phân chia chính thức 100 training, 50 validation, 50 test. Không có bước train mạng học sâu; tên split được giữ từ dữ liệu nguồn.
+
+Bảng chính dùng 50 ảnh test với 5.720 đối tượng thật. Bốn cách chạy tạo 200 dòng kết quả, không phải 200 ảnh test độc lập. F1 được lấy trung bình theo ảnh; ghép đối tượng tại IoU≥0,5. Khảo sát từng bước và nhiễu/mờ hiện dùng 6 validation, mỗi đợt 42 dòng; cần nêu giới hạn này.
+
+Ảnh thật trên slide có 156 đối tượng đúng. Python custom dự đoán 187, F1 khoảng 0,7580; Fiji native dự đoán 147, F1 khoảng 0,9571. Có cả ảnh khó: một ảnh khác có 69 đối tượng đúng nhưng Python chỉ dự đoán 23, F1 0,2174. Không chọn toàn ảnh đẹp để minh họa.
+
+Nguồn: https://bbbc.broadinstitute.org/BBBC039; docs/evidence/v2_compare_bbbc039_test/per_image.csv.
+
+## Slide 8: Kết quả trên 50 ảnh test
+
+10:50–12:30 — 100 giây.
+
+F1 trung bình theo ảnh của Python tự cài là 0,7087; Python thư viện 0,7054; Fiji shared 0,7188 và Fiji native 0,8917. Báo cáo có khoảng tin cậy bootstrap 95%, lấy mẫu lại theo ảnh 1.000 lần với seed cố định. CSV từng ảnh, cấu hình và môi trường được giữ để tái lập.
+
+Ba cách đầu có cùng mask nên IoU tiền cảnh đều khoảng 0,8954. Fiji native có IoU khoảng 0,8910 nhưng F1 đối tượng cao hơn. Điều này chứng minh mask vật/nền khớp cao chưa đủ để tách đúng từng đối tượng; biên giữa các vật cũng quan trọng.
+
+Không được kết luận riêng hàm Watershed native tốt hơn, vì toàn bộ tiền xử lý và cách tạo marker khác nhau. Native vẫn có lỗi gộp và không có bằng chứng tổng quát cho mọi miền ảnh. Các khoảng tin cậy là mô tả tập khảo sát, không tự thay kiểm định cặp hoặc đánh giá trên bộ dữ liệu mới độc lập.
+
+Nguồn: summary.csv, per_image.csv và study.json trong docs/evidence/v2_compare_bbbc039_test.
+
+## Slide 9: Khảo sát và benchmark
+
+12:30–14:10 — 100 giây.
+
+Trên 6 ảnh validation, marker chưa lọc cho F1 0,1563 do chia thừa. Lọc bằng h-maxima nâng lên 0,6663, nhưng CCL đạt 0,8168. Như vậy baseline Watershed còn chia thừa, không phải cứ thêm bước là tốt hơn. Bỏ Gaussian đạt 0,6884; làm mờ mạnh sigma 3 làm F1 còn 0,6018. Các kết quả bất lợi đều được giữ trong báo cáo.
+
+Benchmark reconstruction đo 5 lần sau một lượt làm nóng, kiểm tra đầu ra bằng nhau. Trên ảnh 160×160, queue Python khoảng 0,100107 giây, vòng lặp dùng SciPy khoảng 0,030336 giây. Ý tưởng giảm cập nhật chưa chắc nhanh hơn vòng lặp có nhân xử lý biên dịch. Đây là so triển khai, không cô lập độ phức tạp thuật toán.
+
+Bộ kiểm thử có 29 trường hợp được ghi nhận trong lần kiểm tra đầy đủ. Đợt chỉnh chú thích giữ nguyên AST thực thi và chạy lại kiểm thử phù hợp. Hạn chế lớn còn lại là khảo sát 6 validation và chỉ một bộ dữ liệu thật. Hướng tiếp theo là mở rộng khảo sát trước khi tuyên bố cải tiến.
+
+Nguồn: docs/evidence/v2_ablation_bbbc039, v2_robustness_bbbc039 và academic_checks/timing_summary.csv.
+
+## Slide 10: App hỗ trợ và kết luận
+
+14:10–15:00 — 50 giây.
+
+Sau phần nghiên cứu, MorphoLab giúp chọn ảnh, chỉnh tham số, xem các bước và lưu kết quả thuận tiện. Giao diện gọi lại chính pipeline và algorithms của phần chạy Terminal; nó không làm thuật toán chính xác hơn và không thay thế minh chứng nghiên cứu.
+
+Nhóm đã trình bày lý thuyết, tự cài các thuật toán chính, làm tay và đo trong Fiji, đối chiếu bằng Python, đánh giá nhiều ảnh và đo hiệu năng. Giới hạn là độ nhạy với nền, marker, tốc độ Python và phạm vi dữ liệu. Hướng phát triển ưu tiên là khảo sát toàn validation và kiểm tra dữ liệu khác. Kết thúc phần trình bày và chuyển sang hỏi đáp.
+
+Nguồn: morpholab/gui.py; ảnh chụp ứng dụng do người học cung cấp; kết luận báo cáo.

@@ -1,0 +1,42 @@
+[
+  {
+    "path": "submission/BAO_CAO_NHOM_1.docx",
+    "bytes": 273825
+  },
+  {
+    "path": "submission/report_source.md",
+    "bytes": 50551
+  },
+  {
+    "path": "submission/latex/app.tex",
+    "bytes": 3686
+  },
+  {
+    "path": "submission/latex/fiji_tutorial.tex",
+    "bytes": 8777
+  },
+  {
+    "path": "submission/HUONG_DAN_FIJI_TUNG_BUOC.md",
+    "bytes": 6736
+  },
+  {
+    "path": "submission/assets/input_output.png",
+    "bytes": 115625
+  },
+  {
+    "path": "scripts/build_latex_report.py",
+    "bytes": 17185
+  },
+  {
+    "path": "scripts/build_report_pdf.py",
+    "bytes": 5088
+  },
+  {
+    "path": "scripts/render_report_pages.py",
+    "bytes": 747
+  },
+  {
+    "path": "scripts/render_word_metafiles.ps1",
+    "bytes": 1717
+  }
+]

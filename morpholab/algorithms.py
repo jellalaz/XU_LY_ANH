@@ -1,8 +1,4 @@
-"""Educational implementations. No skimage segmentation calls in this module.
-
-All images are 2D. Binary morphology uses zero padding and a centered odd SE.
-Distance uses a one-pixel background frame. Connectivity is explicitly 4 or 8.
-"""
+"""Các thuật toán tự cài cho ảnh 2D. Ngoài ảnh là nền 0; SE có tâm, kích thước lẻ. Liên thông 4 hoặc 8."""
 from collections import deque
 import heapq
 import numpy as np
@@ -10,6 +6,7 @@ from .tasks import check_cancelled
 
 
 def offsets(connectivity=4):
+    """Các độ lệch láng giềng: 4 hướng thẳng hoặc thêm 4 hướng chéo."""
     if connectivity not in (4, 8):
         raise ValueError("Connectivity must be 4 or 8")
     return [(y, x) for y in (-1, 0, 1) for x in (-1, 0, 1)
@@ -17,6 +14,7 @@ def offsets(connectivity=4):
 
 
 def footprint(radius=1, shape="disk"):
+    """Tạo phần tử cấu trúc. Square r=4 có cạnh 2r+1=9 pixel; Disk là đĩa trên lưới."""
     if int(radius) != radius or not 0 <= radius <= 50:
         raise ValueError("SE radius must be an integer in [0, 50]")
     y, x = np.mgrid[-radius:radius+1, -radius:radius+1]
@@ -30,6 +28,7 @@ def footprint(radius=1, shape="disk"):
 
 
 def binary_morphology(image, se, operation):
+    """Co/giãn nhị phân. Co dùng AND (MIN), giãn dùng OR (MAX) trên vị trí SE chọn. Mỗi cửa sổ tính một pixel đầu ra; mở = co rồi giãn, đóng = giãn rồi co."""
     a = np.asarray(image, bool)
     se = np.asarray(se, bool)
     if a.ndim != 2 or se.ndim != 2 or any(s % 2 == 0 for s in se.shape) or not se.any():
@@ -46,7 +45,7 @@ def binary_morphology(image, se, operation):
     for y, x in np.argwhere(se):
         check_cancelled()
         dy, dx = int(y - ry), int(x - rx)
-        # Dilation samples x-b; erosion samples x+b (important for asymmetric SE).
+        # Giãn lấy x-b, co lấy x+b; dấu quan trọng khi SE không đối xứng.
         sign = -1 if operation == "dilation" else 1
         starty, startx = ry + sign*dy, rx + sign*dx
         shifted = padded[starty:starty+a.shape[0], startx:startx+a.shape[1]]
@@ -58,6 +57,7 @@ def binary_morphology(image, se, operation):
 
 
 def connected_components(mask, connectivity=4):
+    """Duyệt theo chiều rộng, cấp một ID cho mỗi vùng trắng nối liền; nền là 0."""
     a = np.asarray(mask, bool)
     if a.ndim != 2:
         raise ValueError("Expected 2D mask")
@@ -86,15 +86,15 @@ def connected_components(mask, connectivity=4):
 
 
 def reconstruction_dilation(seed, mask, connectivity=4):
-    """Geodesic dilation to fixed point using a propagation queue (gray/binary)."""
+    """Giãn seed dưới giới hạn mask tới khi không đổi, dùng hàng đợi lan truyền. Vùng nhị phân còn seed được khôi phục theo liên thông đã chọn; mỗi giá trị lan bị chặn bởi mask ở đích."""
     seed, mask = np.asarray(seed, float), np.asarray(mask, float)
     if seed.shape != mask.shape or seed.ndim != 2 or not np.isfinite(seed).all() or not np.isfinite(mask).all():
         raise ValueError("Seed and mask must be finite 2D arrays of equal shape")
     if np.any(seed > mask):
         raise ValueError("Dilation reconstruction requires seed <= mask")
-    # One synchronous dilation initializes only changed sites. Unchanged sites
-    # have already propagated their original values to every neighbor in this
-    # pass. Further increases therefore need propagation only from changed sites.
+    # Một lượt giãn đồng bộ đã lan giá trị ban đầu tới mọi láng giềng.
+    # Chỉ các vị trí tăng giá trị cần vào hàng đợi để lan tiếp.
+    # Cờ pending tránh đưa trùng vị trí đang chờ xử lý.
     neighbors = offsets(connectivity)
     h,w=seed.shape
     padded=np.pad(seed,1,constant_values=-np.inf)
@@ -125,11 +125,7 @@ def reconstruction_dilation(seed, mask, connectivity=4):
 
 
 def _squared_edt_1d(f):
-    """Lower parabola envelope, O(n); Felzenszwalb & Huttenlocher (2012).
-
-    Independently written Python implementation of the published algorithm;
-    computes min_i ((x-i)^2 + f[i]), skipping infinite-cost sites.
-    """
+    """Bao dưới parabol O(n), theo Felzenszwalb và Huttenlocher (2012). Tính min_i ((x-i)^2+f[i]); v lưu ứng viên, z lưu ranh giới miền tối ưu."""
     n = len(f)
     sites = np.flatnonzero(np.isfinite(f))
     if not sites.size:
@@ -156,7 +152,7 @@ def _squared_edt_1d(f):
 
 
 def distance_transform(mask):
-    """Exact Euclidean distance to background; separable squared EDT."""
+    """Khoảng cách Euclid tới nền: tính bình phương theo cột rồi hàng, cuối cùng lấy căn. Thêm viền nền một pixel; đầu ra giữ kích thước ảnh."""
     a = np.pad(np.asarray(mask, bool), 1, constant_values=False)
     f = np.where(a, np.inf, 0.0)
     for x in range(f.shape[1]):
@@ -169,6 +165,7 @@ def distance_transform(mask):
 
 
 def h_maxima(image, height, connectivity=4):
+    """Lọc cực đại bằng tái tạo theo độ nổi h. Đây không phải ngưỡng sáng tuyệt đối hay số vật cần tìm."""
     if height <= 0:
         raise ValueError("h must be > 0")
     a = np.asarray(image, float)
@@ -177,12 +174,7 @@ def h_maxima(image, height, connectivity=4):
 
 
 def watershed(elevation, markers, mask, connectivity=4):
-    """Seeded priority flood without dams.
-
-    Heap key = (maximum elevation along path, FIFO arrival). Marked pixels are
-    immutable. Equal-cost plateaus are assigned by arrival order. This tie rule
-    is documented; exact boundaries need not match another implementation.
-    """
+    """Lan nhãn từ marker bằng heap, giới hạn trong mask, không tạo đường nền chia vùng. Khóa gồm mức ngập lớn nhất trên đường đi và thứ tự đến; giữ nguyên ID marker. Khi hòa, thứ tự đến quyết định nhãn."""
     a = np.asarray(elevation, float)
     marker = np.asarray(markers)
     valid = np.asarray(mask, bool)

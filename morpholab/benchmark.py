@@ -1,4 +1,4 @@
-"""Repeated measurements, per-image records and honest validation/test separation."""
+"""Chạy lặp để đo tốc độ; tách rõ dữ liệu khảo sát và dữ liệu đánh giá cuối."""
 from pathlib import Path
 from dataclasses import replace, asdict
 import json
@@ -12,7 +12,7 @@ from .tasks import check_cancelled,Cancelled
 
 
 def process_folder(input_folder, output_folder, params=None, progress=print):
-    """Process user images; optionally pair stem_gt.tif labels, never assume GT."""
+    """Chạy ảnh trong thư mục, tìm nhãn stem_gt.tif nếu có; không tự giả định luôn có nhãn đúng."""
     from .io import export_result
     source=Path(input_folder).resolve(); target=Path(output_folder).resolve()
     if source==target or source in target.parents:
@@ -23,7 +23,7 @@ def process_folder(input_folder, output_folder, params=None, progress=print):
     rows=[]
     for i,path in enumerate(files):
         check_cancelled()
-        # Prefix prevents PNG/TIFF with the same stem from overwriting each other.
+        # Thêm tiền tố để PNG/TIFF cùng tên gốc không ghi đè nhau.
         folder=target/f'{i:04d}_{path.stem}'
         try:
             image=read_image(path); result=run(image,params)
@@ -46,6 +46,7 @@ def process_folder(input_folder, output_folder, params=None, progress=print):
 
 def benchmark(manifest, folder, params=None, split='validation', limit=None, repeats=3,
               engines=('custom','library'), modes=('ccl','raw','hmax','adaptive'), progress=print):
+    """Đo nhiều lần sau làm nóng, không cộng đọc ghi/metric vào thời gian thuật toán Python."""
     if repeats<1: raise ValueError('Số lần đo phải >= 1')
     items=records(manifest,split,limit)
     if not items: raise ValueError('Không có ảnh trong split đã chọn')
@@ -57,7 +58,7 @@ def benchmark(manifest, folder, params=None, split='validation', limit=None, rep
         for engine in engines:
             for mode in modes:
                 p=replace(params or Parameters(),engine=engine,mode=mode)
-                # Warm-up not counted. IO and metrics excluded from algorithm timing.
+                # Không tính lượt làm nóng, đọc ghi và metric vào thời gian thuật toán.
                 run(image,p)
                 times=[]
                 for repeat in range(repeats):
@@ -80,7 +81,7 @@ def benchmark(manifest, folder, params=None, split='validation', limit=None, rep
         'engines':list(engines),'modes':list(modes),'environment':environment(),
         'aggregation':'Macro mean metrics over images. Median runtime; IO and metrics excluded.',
         'warning':'Do not tune parameters using test split; adaptive is a hypothesis, not guaranteed improvement.'})
-    # Standalone PNG for report. Backend-independent Figure API.
+    # Xuất PNG biểu đồ cho báo cáo, không cần cửa sổ đồ họa.
     from matplotlib.figure import Figure
     fig=Figure(figsize=(11,4),layout='constrained')
     a,b=fig.subplots(1,2)
@@ -96,7 +97,7 @@ def benchmark(manifest, folder, params=None, split='validation', limit=None, rep
 
 
 def sweep(manifest,folder,params=None,heights=(.5,1.,2.,4.,6.),limit=6,progress=print):
-    """Tune on validation only. This function cannot select the test split."""
+    """Khảo sát các mức h trên validation; không chọn tham số bằng nhãn test."""
     folder=Path(folder); folder.mkdir(parents=True,exist_ok=True)
     rows=[]
     base=replace(params or Parameters(),mode='hmax').validate()

@@ -1,4 +1,4 @@
-"""Download official BBBC039 or generate reproducible, explicitly synthetic data."""
+"""Tải BBBC039 chính thức hoặc tạo ảnh tổng hợp có nhãn đúng và seed cố định."""
 from pathlib import Path
 from urllib.request import urlopen
 import hashlib
@@ -17,6 +17,7 @@ BASE = 'https://data.broadinstitute.org/bbbc/BBBC039/'
 
 
 def prepare_bbbc(root='data', progress=print):
+    """Tải ảnh/nhãn BBBC039 theo nguồn và phân chia chính thức; kiểm tra đường dẫn giải nén."""
     root=Path(root); raw=root/'raw'; target=root/'bbbc039'
     raw.mkdir(parents=True,exist_ok=True)
     for part in ('images','masks','metadata'):
@@ -31,7 +32,7 @@ def prepare_bbbc(root='data', progress=print):
             temp.replace(archive)
         with zipfile.ZipFile(archive) as z:
             for name in z.namelist():
-                # Extract only expected direct children; never arbitrary paths.
+                # Chỉ giải nén tệp con hợp lệ, không cho phép đường dẫn tùy ý.
                 p=Path(name)
                 if len(p.parts)!=2 or p.parts[0]!=part or p.name.startswith('.') or name.endswith('/'):
                     continue
@@ -49,7 +50,7 @@ def prepare_bbbc(root='data', progress=print):
         out=target/'labels'/(image.stem+'.tif'); out.parent.mkdir(exist_ok=True)
         if not out.exists():
             rgb=np.asarray(Image.open(mask))
-            # Official author decoder: connected equal-valued regions of channel 0.
+            # Giải mã theo tác giả: các vùng nối liền cùng giá trị ở kênh 0.
             channel=rgb[...,0] if rgb.ndim==3 else rgb
             labels=label(channel,background=0,connectivity=2).astype(np.uint32)
             tifffile.imwrite(out,labels)
@@ -66,6 +67,7 @@ def prepare_bbbc(root='data', progress=print):
 
 
 def synthetic(root='data', count=18, seed=20261108):
+    """Tạo ảnh các đĩa có chạm nhau, nhiễu và nhãn đúng; không phải ground truth sinh học."""
     root=Path(root); target=root/'synthetic'; target.mkdir(parents=True,exist_ok=True)
     records=[]
     for i in range(count):
@@ -103,9 +105,10 @@ def synthetic(root='data', count=18, seed=20261108):
 
 
 def records(manifest, split=None, limit=None):
+    """Đọc danh sách ảnh và nhãn cùng split; hỗ trợ giới hạn số ảnh để chạy thử."""
     data=json.loads(Path(manifest).read_text(encoding='utf-8'))
     root=Path(data['root'])
-    # Locate data relative to manifest, so moving the project remains supported.
+    # Tìm dữ liệu tương đối với manifest để hỗ trợ di chuyển project.
     if not root.exists(): root=Path(manifest).resolve().parent.parent
     rows=[r for r in data['records'] if split is None or r['split']==split]
     if limit: rows=rows[:limit]

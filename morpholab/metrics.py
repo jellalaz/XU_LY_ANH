@@ -1,13 +1,14 @@
-"""Instance metrics with one-to-one, maximum-cardinality IoU matching."""
+"""Đánh giá từng đối tượng bằng ghép một-một; ưu tiên số cặp hợp lệ rồi tổng IoU."""
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from .io import validate_labels
 
 
 def _overlap(truth, prediction):
+    """Lập bảng diện tích giao giữa từng cặp ID, từ đó tính ma trận IoU."""
     truth = validate_labels(truth)
     prediction = validate_labels(prediction, truth.shape)
-    # Insert a zero ID even for all-foreground images.
+    # Bổ sung ID nền 0 cả khi toàn ảnh là vật thể.
     gtids = np.unique(np.append(truth,0))
     prids = np.unique(np.append(prediction,0))
     if len(gtids) > 10001 or len(prids) > 10001 or len(gtids)*len(prids) > 20_000_000:
@@ -23,11 +24,12 @@ def _overlap(truth, prediction):
 
 
 def evaluate(truth, prediction, iou_threshold=.5, overlap_fraction=.1):
+    """Ghép từng nhãn dự đoán với nhãn đúng tại IoU yêu cầu, tính F1/PQ và lỗi chia/gộp. IoU/Dice tiền cảnh dùng hai mask ID>0; không phụ thuộc màu LUT."""
     if not 0 < iou_threshold <= 1 or not 0 < overlap_fraction <= 1:
         raise ValueError('Ngưỡng IoU và overlap phải nằm trong (0, 1]')
     _, ga, pa, inter, iou, g, p = _overlap(truth,prediction)
     valid = iou >= iou_threshold
-    # Lexicographic objective: maximize number of valid matches, then sum IoU.
+    # Ưu tiên số cặp ghép hợp lệ, sau đó mới tối đa tổng IoU.
     row, col = linear_sum_assignment(-(valid*(min(iou.shape,default=0)+1)+iou*valid))
     matched = valid[row,col]
     tp = int(matched.sum()); ng, npred = len(ga),len(pa)
@@ -51,6 +53,7 @@ def evaluate(truth, prediction, iou_threshold=.5, overlap_fraction=.1):
 
 
 def compare_labels(reference, prediction):
+    """Ghép ID để đo mức đồng thuận hai triển khai. Tham chiếu Fiji không thay nhãn đúng."""
     hist, _, _, _, _, g, p = _overlap(reference,prediction)
     row, col = linear_sum_assignment(-hist[1:,1:])
     mapping = np.full(hist.shape[1],-1,dtype=int)

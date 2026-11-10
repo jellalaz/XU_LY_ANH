@@ -1,6 +1,6 @@
 # Hướng dẫn chạy, kiểm chứng và bảo vệ — PTIT nhóm 1
 
-**Mới học Fiji:** mở [Thực hành Fiji lần đầu — 6 bước](HUONG_DAN_FIJI_TUNG_BUOC.md). Báo cáo chính đã chuyển sang PDF biên dịch LaTeX; phần thực hành nằm ở Chương 4, phần app ở Chương 6. Word là bản trước khi bổ sung LaTeX.
+**Mới học Fiji:** mở [Thực hành Fiji đầy đủ](HUONG_DAN_FIJI_DAY_DU.md). Báo cáo chính đã chuyển sang PDF biên dịch LaTeX; phần thực hành nằm ở Chương 3, phần app ở Chương 6. Bản Word cũ đã được loại bỏ để tránh nhầm.
 
 Đề tài: **Phân đoạn đối tượng bằng hình thái học toán học và Watershed**. Dùng Python để tự cài và thực nghiệm; dùng **Fiji/ImageJ + MorphoLibJ** làm nền tảng tham chiếu. Không có bước huấn luyện mô hình AI. Không cần mở ứng dụng MorphoLab để chạy phần nghiên cứu.
 

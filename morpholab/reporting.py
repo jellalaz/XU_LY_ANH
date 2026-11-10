@@ -1,4 +1,4 @@
-"""Offline HTML experiment sheets. These are not the final 30-page report."""
+"""Xuất phiếu HTML xem kết quả; báo cáo nộp chính nằm ở submission/latex/main.tex."""
 from pathlib import Path
 from html import escape
 import base64
@@ -29,6 +29,7 @@ def _image(path,title):
 
 
 def session_report(folder):
+    """Tạo trang HTML của một lần chạy, gồm ảnh và thông số."""
     folder=Path(folder)
     data=json.loads((folder/'run.json').read_text(encoding='utf-8'))
     body='<article><h2>Kết quả phân đoạn</h2><p>Số đối tượng: <b>'+str(int(data['objects']))+'</b></p>'
@@ -46,6 +47,7 @@ def session_report(folder):
 
 
 def study_report(folder):
+    """Tạo trang HTML tổng hợp một đợt nghiên cứu từ CSV đã lưu."""
     import pandas as pd
     folder=Path(folder)
     metadata=json.loads((folder/'study.json').read_text(encoding='utf-8'))

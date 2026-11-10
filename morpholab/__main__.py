@@ -1,3 +1,4 @@
+"""Điểm vào khi chạy python -m morpholab; đọc lệnh, gọi xử lý và xuất kết quả."""
 import argparse
 from pathlib import Path
 import json
@@ -9,6 +10,7 @@ from .metrics import evaluate
 
 
 def main(argv=None):
+    """Đọc lệnh Terminal, gọi chức năng tương ứng; không tự mở giao diện khi chạy segment."""
     if hasattr(sys.stdout,'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8')
         sys.stderr.reconfigure(encoding='utf-8')

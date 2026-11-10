@@ -1,4 +1,4 @@
-"""Cooperative cancellation shared by the GUI, algorithms and child processes."""
+"""Hủy tác vụ có phối hợp giữa giao diện, thuật toán và tiến trình con."""
 from contextlib import contextmanager
 import threading
 
@@ -18,6 +18,7 @@ _local=threading.local()
 
 
 def check_cancelled():
+    """Kiểm tra yêu cầu hủy ở các điểm an toàn trong tác vụ."""
     token=getattr(_local,'token',None)
     if token is not None: token.check()
 

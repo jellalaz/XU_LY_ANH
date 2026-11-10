@@ -1,4 +1,4 @@
-"""Portable TIFF/JSON sessions; no pickle or executable serialized content."""
+"""Lưu/nạp phiên thực nghiệm bằng TIFF/JSON, không dùng pickle hoặc mã thực thi."""
 from dataclasses import dataclass
 from pathlib import Path
 import json
@@ -18,6 +18,7 @@ class Session:
 
 
 def save_session(result,image,folder,truth=None,reference=None,source=None):
+    """Lưu ảnh, cấu hình, nhãn đúng và kết quả để mở lại sau."""
     folder=Path(folder)
     if folder.exists() and any(folder.iterdir()):
         raise FileExistsError('Thư mục lưu phiên phải trống để không trộn kết quả cũ')
@@ -51,6 +52,7 @@ def _file(folder,name):
 
 
 def load_session(folder):
+    """Nạp phiên đã lưu và kiểm tra đường dẫn, kích thước, nhãn."""
     folder=Path(folder)
     data=json.loads(_file(folder,'run.json').read_text(encoding='utf-8'))
     if data.get('session_schema')!=1: raise ValueError('Chọn phiên đã lưu bằng chức năng Lưu phiên, không phải chỉ thư mục Fiji')
@@ -76,6 +78,7 @@ def load_session(folder):
 
 
 def history(root='outputs'):
+    """Liệt kê các phiên có dữ liệu để người dùng mở lại."""
     rows=[]
     for path in Path(root).glob('*/run.json'):
         try:

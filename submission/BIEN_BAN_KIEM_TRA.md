@@ -1,53 +1,44 @@
-# Biên bản kiểm tra hồ sơ — 08/11/2026
+# Biên bản kiểm tra bộ bàn giao — 10/11/2026
 
-## Bổ sung bài thực hành Fiji đầy đủ ngày 09/11/2026
+## Hồ sơ chính
 
-Thêm `HUONG_DAN_FIJI_DAY_DU.md`, giải thích các mục chọn từ ảnh gốc đến nhãn và metric, cùng `fiji/Full_Pipeline_Tutorial.groovy` chạy độc lập trong Fiji. Đã thực thi Groovy trên `synth_00.tif` với showStages=false: Otsu=100, mask=5 vùng, marker=7, nhãn=7; F1=1, IoU=0.9801324503, Dice=0.9899665552. Có 12 TIFF trùng từng giá trị với native Java baseline đã đo. CSV Groovy được đối chiếu với metric Python, kết quả ở `docs/evidence/academic_verification/fiji_tutorial_pipeline.json`. Đây là pipeline native, khác shared có IoU≈0.981397; hướng dẫn phân biệt rõ. Các hộp thoại được đối chiếu với bản JAR cài trên máy; không tuyên bố đã tự động click qua mọi tùy chọn GUI.
+- Báo cáo biên dịch LaTeX thật: `BAO_CAO_NHOM_1.pdf`, nguồn `latex/main.tex` và `latex/fiji_manual.tex`; giữ font và định dạng học thuật như bản trước.
+- Thực hành Fiji từ ảnh gốc, có ảnh từng bước và giải thích lựa chọn, đứng trước chương code Python.
+- App nằm ở chương cuối như phần mở rộng dùng chung thuật toán.
+- 10 slide, kịch bản 900 giây gồm phần thao tác ngắn, ghi chú có nguồn.
+- Đã bỏ Word cũ, nguồn Markdown báo cáo cũ, các bộ chuyển Word/PDF và bản LaTeX chương trùng để tránh nhầm phiên bản.
 
-## Cập nhật báo cáo LaTeX ngày 09/11/2026
+## Kiểm chứng lần thực hành Fiji làm tay
 
-Báo cáo chính `BAO_CAO_NHOM_1.pdf` nay được biên dịch thật từ `submission/latex/main.tex` bằng Tectonic/XeTeX. Bản này thay PDF ReportLab cũ; Word vẫn là phiên bản trước bổ sung LaTeX. Nội dung mới có bìa, mục lục tự động, danh mục hình/bảng, 6 chương, công thức/hình/bảng đánh số, tài liệu tham khảo, phụ lục, chương thực hành Fiji và hình app hỗ trợ.
+TIFF và ảnh chụp người học cung cấp được lưu trong `docs/evidence/fiji_manual`, kèm hash và `verification.json`:
 
-Các hình khoa học mới lấy từ TIFF/kết quả thực nghiệm; ảnh giao diện Fiji/app là các ảnh người học đã cung cấp ở những lượt thực hành trước. Không dùng ảnh giao diện để tạo số liệu định lượng. Tên trường và lựa chọn hộp thoại Fiji đã được đối chiếu với `plugins.config` và bytecode `MarkerControlledWatershed3DPlugin` trong MorphoLibJ 1.6.5: bỏ Binary markers, Calculate dams, Use diagonal connectivity; Compactness=0 cho giao thức shared 2D liên thông 4.
+| Kiểm tra | Kết quả |
+| --- | --- |
+| Vùng liên thông trước tách | 5 |
+| Marker / nhãn cuối | 7 / 7 |
+| IoU GUI Fiji | 0,980451 |
+| IoU Python chấm TIFF Fiji | 0,9804508907 |
+| Dice GUI Fiji | 0,990129 |
+| Dice Python chấm TIFF Fiji | 0,9901289604 |
+| F1 đối tượng, IoU ghép ≥ 0,5 | 1,0; TP=7, FP=0, FN=0 |
+| Hai mask dùng GUI so ID dương của nhãn gốc | Trùng hoàn toàn |
+| Địa hình dùng trong báo cáo | `-distance`, float32 |
 
-Đã biên dịch lại để cập nhật mục lục/liên kết, kiểm tra log không còn công thức/tham chiếu chưa giải quyết, thiếu glyph hoặc dòng tràn lề; render các trang để kiểm tra bố cục. Chi tiết số trang, nhãn trang và hash PDF trong `docs/evidence/academic_verification/latex_validation.json`. Hướng dẫn mới `HUONG_DAN_FIJI_TUNG_BUOC.md` dành riêng cho người dùng lần đầu. Không thay thuật toán hay số liệu nghiên cứu trong đợt chỉnh báo cáo.
+Phát hiện file `15_elevation.tif` người học lưu vẫn dương. Giữ bản lưu đó dưới tên `elevation_saved_before_multiply.tif`, xuất lại elevation âm và kiểm chứng bằng JAR MorphoLibJ thật. Nhãn chạy lại từ địa hình âm trùng vùng nhãn làm tay sau ghép ID; địa hình dương khác 1915 pixel. Không thay nhãn dự đoán hoặc nhãn đúng để tăng điểm.
 
-Các ghi nhận phía dưới mô tả bộ hồ sơ trước khi chuyển LaTeX, gồm kết quả test phần mềm vẫn được giữ nguyên.
+Đối chiếu mảng toán tử xác định bán kính học thử: erosion r=1, dilation r=3, opening/closing r=2, seed tái tạo r=4. Báo cáo ghi rõ, không so như cùng bán kính. Baseline native tự động và Python mặc định giữ số liệu cũ, không thay bằng số làm tay.
 
-Phạm vi: hoàn thiện phần học thuật của đề tài nhóm 1; giao diện hiện có là công cụ hỗ trợ, không phát triển thêm tính năng app trong đợt này.
+## Kiểm thử và tài liệu
 
-## Kết quả đã kiểm tra
+- Chú thích/docstring tiếng Việt cho 15 module Python; kiểm tra AST sau khi bỏ docstring: câu lệnh thực thi giữ nguyên.
+- Chạy lại bộ test: phát hiện 29, 22 chạy qua, 7 test desktop bỏ qua theo cấu hình mặc định. Không tuyên bố vừa chạy lại đủ test desktop; lần kiểm tra đầy đủ trước đó vẫn lưu ở `unittest.txt`.
+- Hai test tích hợp gọi Fiji/Java thật chạy qua. Lượt đầu Windows chặn DLL TkAgg; chạy lại cùng env với quyền thực thi của công cụ đã qua, không đổi code thuật toán.
+- Báo cáo: kiểm tra log không tràn lề, không thiếu glyph hoặc tham chiếu; trích mã khớp AST; render trang để xem bố cục. Số trang/hash ghi trong `latex_validation.json`.
+- Slide: kiểm tra package, kích thước, bảng/biểu đồ sửa được, font, nhập lại bằng Artifact Tool; render và xem toàn bộ. Không tuyên bố đã mở sửa/lưu lại trong PowerPoint. Người trình bày nên thử trên máy chiếu.
+- Ba ảnh thật chạy lại qua 4 cách trong đợt trước cho 12/12 kết quả khớp CSV báo cáo. Đợt này giữ nguyên nghiên cứu 50 test × 4 cách và hai khảo sát 42 dòng, không chạy lại để chọn số đẹp.
 
-| Hạng mục | Kết quả | Minh chứng |
-| --- | --- | --- |
-| Bộ kiểm thử đầy đủ | 29/29 qua, bao gồm 7 luồng Tk và Fiji thật | `docs/evidence/academic_verification/unittest.txt` |
-| Demo tự động | Hmax 7 vùng/F1=1; CCL 5/F1=0.8333; empty 0/F1=0 | `smoke_summary.json` cùng thư mục minh chứng |
-| Java/Fiji tính metric | IoU/Dice/số lượng khớp với Python trên nhãn Fiji, cả shared và native | Assert trong `scripts/academic_smoke.py`; `smoke_summary.json` |
-| Script Groovy | Chạy thật bằng Groovy/Fiji JAR với hiển thị tắt; ảnh nhãn giống hệt Java bridge | `groovy_replay_exact=true` trong summary |
-| Benchmark CLI | 1 ảnh × 2 engine × 4 mode, 3 lần đo; tạo đủ 8 dòng tóm tắt | `benchmark_summary.csv` |
-| Khảo sát h | 6 ảnh validation, 5 mức h, library/hmax | `sweep.csv` |
-| CLI dữ liệu thật | 1 ảnh test qua 4 cách xử lý, không lỗi | `real_image_summary.csv` |
-| Tính tay và reconstruction | Ma trận toán tử; đầu ra hai cách reconstruction bằng nhau; 3 kích thước × 2 cách × 5 lần | `docs/evidence/academic_checks` lưu phép đo dùng trong báo cáo |
-| Báo cáo Word | 32 trang theo Word; có bảng, hình, công thức và code | `BAO_CAO_NHOM_1.docx` |
-| Báo cáo PDF | 32 trang; văn bản tìm kiếm được; không còn chỉ thị dựng bảng; đã xem bản dựng các trang | `BAO_CAO_NHOM_1.pdf` |
-| Presentation | 10 slide; 4 bảng và 2 biểu đồ native; 10 phần ghi chú; kiểm tra package/layout/import qua | `PRESENTATION_NHOM_1.pptx`; `presentation_validation.json` |
+## Giới hạn và nộp bài
 
-Số liệu nghiên cứu chính được giữ nguyên từ các đợt chạy đầy đủ: 200 dòng đối chiếu trên 50 test; 42 dòng ablation và 42 dòng robustness trên 6 validation. Đợt kiểm tra bàn giao chạy các ca nhỏ để xác nhận đường tái lập, không đổi nhãn tập test hoặc thay số liệu bằng kết quả demo.
+Khảo sát bổ sung mới dùng 6 validation; một bộ dữ liệu thật; marker nhạy và Python tự cài chưa nhanh bằng thư viện. CCL tốt hơn baseline trong khảo sát, queue Python chậm hơn SciPy trong benchmark. Các kết quả bất lợi được giữ nguyên.
 
-## Các giới hạn được ghi nhận
-
-- Test Tk ban đầu không khởi tạo được Tcl trong sandbox của công cụ. Chạy lại trên desktop thật với cùng env `ai` đã qua đủ 29 test; không cần sửa thuật toán hoặc cài lại env.
-- Groovy đã được kiểm tra phần tính toán bằng headless binding. Hộp thoại chọn thư mục/hiển thị ảnh cần nhóm thao tác theo hướng dẫn khi luyện demo; không tuyên bố đã kiểm thử tự động mọi menu Fiji.
-- Bộ xuất PDF trực tiếp của Word bị chờ. Các tiến trình Automation do tác vụ tạo đã được thu hồi. PDF cuối được dựng riêng từ nội dung DOCX bằng ReportLab, nhúng font tiếng Việt và kiểm tra lại 32 trang; có thể khác cách ngắt dòng so với Word.
-- PPTX đã được render/kiểm tra cấu trúc, dữ liệu biểu đồ và khả năng nhập lại bằng công cụ tạo slide. Chưa kiểm tra sửa biểu đồ rồi lưu/mở lại trong PowerPoint hoặc Google Slides; nhóm nên mở trên máy trình chiếu trước buổi bảo vệ.
-- Báo cáo có kết quả bất lợi: CCL tốt hơn baseline trên tập validation khảo sát; queue Python chậm hơn SciPy trong phép đo reconstruction. Không sửa số liệu để tạo kết luận cải tiến thành công.
-- Chưa nộp LMS. Nhóm cần xác nhận phân công thực tế, đọc hiểu nội dung và kiểm tra hạn nộp trong LMS.
-
-## Tệp tạo lại tài liệu
-
-- `scripts/build_report.py`: dựng DOCX từ `submission/report_source.md` và số liệu gốc.
-- `scripts/build_report_pdf.py`: dựng PDF từ DOCX bằng python-docx/ReportLab và font Windows.
-- `scripts/build_slides.mjs`: dựng slide và kiểm tra dữ liệu biểu đồ bằng runtime artifact-tool đã dùng khi biên soạn. Đường dẫn runtime hiện gắn với máy này; không cần script này để mở PPTX hoặc chạy thí nghiệm.
-- `scripts/render_word_metafiles.ps1`, `render_report_pages.py`: công cụ kiểm tra bố cục, không thuộc thuật toán xử lý ảnh.
-
-Chạy nghiên cứu chỉ cần env `ai` và Fiji theo hướng dẫn; các thư viện dựng tài liệu không phải phụ thuộc của phần mềm phân đoạn.
+Một đại diện kiểm tra tên/MSSV, phân công thực tế và nộp LMS ghi Nhóm 1 trước hạn trong đề. Chưa tự động nộp LMS. Mức độ hiểu và khả năng giải thích của nhóm là phần phải luyện trước bảo vệ.

@@ -21,6 +21,6 @@ for start in range(0,len(pdf),4):
         sheet.paste(im,(x,y+24));draw.text((x+8,y+5),f'PDF {start+j+1} / printed {reader.page_labels[start+j]}',fill='black')
     sheet.save(out/f'sheet-{start//4+1:02}.png')
 assert not any('??' in p['text'] for p in pages),'Unresolved LaTeX reference'
-assert any('4.3' in p['text'] and 'Watershed' in p['text'] for p in pages)
+assert any('Thực hành từng bước' in p['text'] for p in pages)
 (out/'pages.json').write_text(json.dumps(pages,ensure_ascii=False,indent=2),encoding='utf-8')
 print('Pages:',len(pdf),'labels:',reader.page_labels)

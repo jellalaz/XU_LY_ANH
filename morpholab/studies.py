@@ -1,7 +1,4 @@
-"""Sequential research workflows: cross-platform comparison, ablation, robustness.
-
-One image at a time. Test splits are evaluated as configured, never tuned here.
-"""
+"""Kế hoạch đối chiếu, bỏ/thay từng bước và thử nhiễu/mờ, chạy tuần tự từng ảnh."""
 from pathlib import Path
 from dataclasses import replace,asdict
 from datetime import datetime,timezone
@@ -25,6 +22,7 @@ DESCRIPTIONS={
 
 
 def _variants(kind,base,backends):
+    """Tạo các cấu hình của cùng kế hoạch; mỗi biến thể ghi rõ thứ thay đổi."""
     if kind=='compare': return [(b,base,b,{}) for b in backends]
     if kind=='ablation':
         return [('baseline',base,'python',{}),('no_gaussian',replace(base,sigma=0),'python',{}),
@@ -41,6 +39,7 @@ def _variants(kind,base,backends):
 
 
 def _summary(rows):
+    """Tổng hợp theo ảnh và bootstrap khoảng tin cậy với seed cố định."""
     frame=pd.DataFrame(rows)
     good=frame[frame.status=='ok'] if 'status' in frame else pd.DataFrame()
     output=[]
@@ -60,6 +59,7 @@ def _summary(rows):
 
 
 def _finish(folder,rows,meta):
+    """Lưu CSV từng ảnh, tổng hợp, cấu hình, biểu đồ và phiếu HTML."""
     frame=pd.DataFrame(rows)
     frame.to_csv(folder/'per_image.csv',index=False,encoding='utf-8-sig')
     summary=_summary(rows)
@@ -70,7 +70,7 @@ def _finish(folder,rows,meta):
     if len(summary):
         y=summary.object_f1.to_numpy(); x=np.arange(len(summary))
         ax.bar(x,y,color='#249e8a')
-        # Interval may be asymmetrical. Explicit bounds avoid negative errors.
+        # Khoảng tin cậy có thể bất đối xứng; chặn sai số âm do làm tròn.
         ax.errorbar(x,y,yerr=np.maximum(0,np.vstack([y-summary.ci_low,summary.ci_high-y])),fmt='none',ecolor='#172f43',capsize=4)
         ax.set_xticks(x,summary.variant,rotation=20,ha='right')
     ax.set(ylim=(0,1.05),ylabel='Macro instance F1 at IoU >= 0.5',title=meta['kind']+' / '+meta['split'])
@@ -83,6 +83,7 @@ def _finish(folder,rows,meta):
 def study(manifest,folder,params=None,kind='compare',split='validation',limit=6,repeats=2,
           backends=('python-custom','python-library','fiji-shared','fiji-native'),
           fiji_home=r'C:\Tools\Fiji',progress=print):
+    """Chạy kế hoạch đối chiếu hoặc khảo sát trên split đã chọn; lưu từng dòng và không ghi đè đợt hoàn tất."""
     base=(params or Parameters()).validate()
     if kind not in DESCRIPTIONS: raise ValueError('Kế hoạch không hợp lệ')
     if not isinstance(repeats,int) or not 1<=repeats<=20: raise ValueError('Lặp đo [1,20]')
@@ -93,7 +94,7 @@ def study(manifest,folder,params=None,kind='compare',split='validation',limit=6,
     items=records(manifest,split,limit)
     if not items: raise ValueError('Split không có ảnh')
     folder=Path(folder); folder.mkdir(parents=True,exist_ok=True)
-    # Preserve previous completed studies, rather than silently mixing records.
+    # Không trộn dữ liệu với đợt đã hoàn tất; cần thư mục đầu ra mới.
     if (folder/'study.json').exists(): raise FileExistsError('Thư mục đã có study; hãy chọn thư mục xuất mới')
     variants=_variants(kind,base,backends)
     rows=[]

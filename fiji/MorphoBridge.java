@@ -7,7 +7,7 @@ import java.nio.file.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-/** Actual MorphoLibJ reference; no Python watershed inside this bridge. */
+/** Gọi MorphoLibJ thật trên cùng địa hình, marker và mask; không chạy Watershed Python. */
 public class MorphoBridge {
     public static void main(String[] args) {
         try { execute(args); System.exit(0); }

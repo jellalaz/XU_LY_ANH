@@ -1,6 +1,6 @@
 # Sử dụng MorphoLab PTIT
 
-Thực hành Fiji lần đầu: xem [hướng dẫn 6 bước](../submission/HUONG_DAN_FIJI_TUNG_BUOC.md). Báo cáo chính hiện là [PDF LaTeX](../submission/BAO_CAO_NHOM_1.pdf), có mục lục, hình và số trang tự động; nguồn trong `submission/latex`.
+Thực hành Fiji lần đầu: xem [hướng dẫn 6 bước](../submission/HUONG_DAN_FIJI_DAY_DU.md). Báo cáo chính hiện là [PDF LaTeX](../submission/BAO_CAO_NHOM_1.pdf), có mục lục, hình và số trang tự động; nguồn trong `submission/latex`.
 
 Học Fiji từ ảnh gốc và hiểu từng lựa chọn: [hướng dẫn đầy đủ](../submission/HUONG_DAN_FIJI_DAY_DU.md), có phân biệt Threshold/Auto/Auto Threshold, tác dụng từng hộp thoại và script Groovy chạy toàn quy trình.
 

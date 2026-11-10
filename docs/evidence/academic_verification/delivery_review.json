@@ -1,0 +1,11 @@
+{
+  "report_sha256": "1e0fd423070870b701bdaba4b3de57f0f28bfd1a97ae2fee70ddabce0402a4f4",
+  "slides_sha256": "c0b7e6d27897dbc19aea7c40b320219c4c22daf4aa63ae8841a526b3e0bd7ec3",
+  "pdf_visual_review": "All 39 pages rendered and 10 contact sheets reviewed. Manual-result figures and tables checked. No clipped text or missing glyphs.",
+  "slides_visual_review": "All 10 slide PNGs inspected at full resolution. No text overlap or clipped figures.",
+  "slide_count": 10,
+  "speaker_notes_with_sources": 10,
+  "presentation_seconds": 900,
+  "editable_charts": 2,
+  "source_zip": "PASS"
+}

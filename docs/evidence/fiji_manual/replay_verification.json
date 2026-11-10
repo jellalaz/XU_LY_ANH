@@ -1,0 +1,13 @@
+{
+  "engine": "Actual Groovy + Fiji JARs, connectivity 4, no dams",
+  "negative_distance": {
+    "matched_pixel_agreement_foreground_union": 1.0,
+    "different_pixels": 0,
+    "note": "Fiji is an implementation reference, not ground truth."
+  },
+  "positive_distance": {
+    "matched_pixel_agreement_foreground_union": 0.6939427840818284,
+    "different_pixels": 1915,
+    "note": "Fiji is an implementation reference, not ground truth."
+  }
+}

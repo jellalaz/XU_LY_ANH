@@ -11,7 +11,7 @@ import inra.ijpb.watershed.Watershed;
 import java.nio.file.*;
 import java.util.*;
 
-/** Independent native Fiji baseline, intentionally distinct from shared-input validation. */
+/** Quy trình Fiji độc lập từ ảnh xám; khác phép kiểm chứng chung ba đầu vào. */
 public class NativePipeline {
     public static void save(Path dir,String name,ImageProcessor p) {
         if(!new FileSaver(new ImagePlus(name,p)).saveAsTiff(dir.resolve(name+".tif").toString()))

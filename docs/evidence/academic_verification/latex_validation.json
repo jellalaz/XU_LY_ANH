@@ -1,8 +1,8 @@
 {
-  "date": "2026-11-09",
-  "engine": "Tectonic 0.17.0 / XeTeX",
-  "format": "LaTeX source compiled to PDF",
-  "pdf_pages": 37,
+  "date": "2026-11-10",
+  "engine": "Tectonic / XeTeX",
+  "format": "LaTeX",
+  "pdf_pages": 39,
   "page_labels": [
     "1",
     "i",
@@ -40,21 +40,18 @@
     "28",
     "29",
     "30",
-    "31"
+    "31",
+    "32",
+    "33"
   ],
-  "arabic_numbered_pages": 31,
-  "figures": 10,
-  "tables": 9,
+  "arabic_numbered_pages": 33,
+  "figures": 16,
+  "tables": 8,
   "equations": 17,
   "unresolved_references": false,
   "missing_glyphs": false,
   "overfull_boxes": false,
   "listing_executable_code_matches": true,
-  "pdf_sha256": "e867c2ba40b5be831be46bc81fcd0356ea0892de6505d8dd7856dc4bab066ba6",
-  "visual_review": "Rendered pages and reviewed layout, formulas, figures, tables, page numbering and commands.",
-  "manual_fiji_ui": "Dialog field names verified against installed MorphoLibJ 1.6.5 plugin bytecode and manual; GUI images supplied by user in earlier practice.",
-  "sources": {
-    "MorphoLibJ": "https://imagej.net/plugins/morpholibj",
-    "Tectonic": "https://github.com/tectonic-typesetting/tectonic/releases/tag/tectonic@0.17.0"
-  }
+  "pdf_sha256": "1e0fd423070870b701bdaba4b3de57f0f28bfd1a97ae2fee70ddabce0402a4f4",
+  "manual_fiji_source": "TIFF va anh chup thuc hanh nguoi hoc; docs/evidence/fiji_manual/verification.json"
 }

@@ -1,0 +1,109 @@
+{
+  "source": "TIFF người học tự lưu từ thao tác menu Fiji trong buổi thực hành",
+  "input": "synth_00.tif, 192 x 192, một kênh 16-bit",
+  "step_parameters": {
+    "sigma": 1,
+    "threshold": "Otsu trên ảnh 8-bit",
+    "element": "Square",
+    "h": 2,
+    "connectivity": 4,
+    "min_area": 25,
+    "dams": false,
+    "compactness": 0
+  },
+  "radius_matches_by_array": {
+    "erosion": [
+      1
+    ],
+    "dilation": [
+      3
+    ],
+    "opening": [
+      2
+    ],
+    "closing": [
+      2
+    ],
+    "seed": [
+      4
+    ]
+  },
+  "elevation_correction": "Giữ nguyên file dương đã lưu dưới tên elevation_saved_before_multiply.tif; xuất lại elevation=-distance. Chạy lại MorphoLibJ với địa hình âm khớp nhãn làm tay sau ghép ID: không pixel bất đồng; địa hình dương lệch 1915 pixel.",
+  "parameter_scope": "Thông số theo nhật ký hội thoại; bán kính còn được kiểm tra bằng mảng TIFF, không suy đoán từ tên ảnh.",
+  "fiji_gui_csv": {
+    "JaccardIndex": "0.980451",
+    "DiceCoefficient": "0.990129"
+  },
+  "python_evaluation_of_manual_fiji": {
+    "foreground_iou": 0.9804508907457039,
+    "foreground_dice": 0.9901289603566311,
+    "object_precision": 1.0,
+    "object_recall": 1.0,
+    "object_f1": 1.0,
+    "panoptic_quality": 0.961507335488281,
+    "mean_matched_iou": 0.961507335488281,
+    "true_objects": 7,
+    "predicted_objects": 7,
+    "tp": 7,
+    "fp": 0,
+    "fn": 0,
+    "count_absolute_error": 0,
+    "split_objects": 0,
+    "merge_objects": 0,
+    "iou_threshold": 0.5,
+    "split_merge_overlap_fraction": 0.1
+  },
+  "python_default_metrics": {
+    "foreground_iou": 0.9813968153870408,
+    "foreground_dice": 0.9906110757479313,
+    "object_precision": 1.0,
+    "object_recall": 1.0,
+    "object_f1": 1.0,
+    "panoptic_quality": 0.9655987522198158,
+    "mean_matched_iou": 0.9655987522198158,
+    "true_objects": 7,
+    "predicted_objects": 7,
+    "tp": 7,
+    "fp": 0,
+    "fn": 0,
+    "count_absolute_error": 0,
+    "split_objects": 0,
+    "merge_objects": 0,
+    "iou_threshold": 0.5,
+    "split_merge_overlap_fraction": 0.1
+  },
+  "manual_fiji_vs_python": {
+    "matched_pixel_agreement_foreground_union": 0.9838735430304966,
+    "different_pixels": 101,
+    "note": "Fiji is an implementation reference, not ground truth."
+  },
+  "checks": "5 thành phần, 7 marker, 7 nhãn; elevation=-distance; mask foreground và CSV GUI khớp Python",
+  "sha256": {
+    "binary.tif": "c4fbc4fb512e6cedea4e83cb17dde75cc4ee2c7a0cdfed2a7053465c5a9c17c7",
+    "closing.tif": "36a8b6b4b307499e1cbbc763fc75019d1fefb88c05ca410f30f987c0bc4de9a2",
+    "components.tif": "ddc88d0fe12b55e7c2373f2c663da5e81513b63d2ebf288418bd7cd74a480875",
+    "dilation.tif": "f8e18cfd339cf851c6c6353d87c3d42cebd6ed6173e5022c8a146edacac6a152",
+    "distance.tif": "a25550dce40155c7bd327b59655932e388eb0643064dfd384c54fde852732276",
+    "elevation.tif": "862d57dfcfb92efc54c346428f4f2cda482f831bac09ebc9906a6a8e824308b1",
+    "elevation_saved_before_multiply.tif": "58c5bd56674e1aac48d90f207e92389599214034326c37803ae1abadf1525002",
+    "erosion.tif": "b55e00a7923362d524f344e918d6109d05052dc80e61f89a7e58eca85413fbd5",
+    "fiji_foreground_metrics.csv": "0d4dc59faaadbd3ff1e8b67a3aff8ec50c3e998b72ee36d1aef64a299264824d",
+    "ground_truth.tif": "8db918335595091d557f6b24f57b3ca25f53e83aa8d96a7e60ec447433323786",
+    "gt_foreground.tif": "c8592ba72e243ff2528102750fbdee9aa66c073f3c52057029adb30327da7c97",
+    "input_16bit.tif": "3bea913d9c7bfcccae6e20cb0274ad063b39e77e6b0e1d13361090f521fa9035",
+    "input_8bit.tif": "bd10e8def2dbde56052443df75ea378bebf411220abbaa698782ef77967d209e",
+    "labels.tif": "c54e761e5ec3dec80d1e686539e7b222df1a4ef5298708bf69ab98097f2c83e2",
+    "markers.tif": "064fa37324098a4cb48463a79019d3254b2abc1ce01fde23409269a97fc8b0ad",
+    "mask.tif": "a43804b345ba05981f6d114230cf86fcb92d81c7b911db2d2054d4696600bfb5",
+    "maxima.tif": "c78e24eda8de11a71591fa92a2d2d4c1b134fd8119a3ef5af650f2fe3c53334d",
+    "opening.tif": "76359f7015c1bfccf0a1e75fa413853867c405428d79b877a33f45713ffff494",
+    "prediction_foreground.tif": "e90f30746db25fa7262d76b4b0ac5b4fc7d90d0019718908a1df05faf6ce8d53",
+    "reconstruction.tif": "a43804b345ba05981f6d114230cf86fcb92d81c7b911db2d2054d4696600bfb5",
+    "seed.tif": "32dacf8f93a27e788a22ec2967a2c746343e8755e912ca44eefb0a4ed52234f9",
+    "smoothed.tif": "806170d808053a9522f32ecfbb0b15115d7a7d193b1fb03023425d1a5e395ac9",
+    "ui_components.png": "cbf26d2b38042a7811b7b9780af314d41f51aeec9c29d131aa1684c6eb8830af",
+    "ui_maxima.png": "6cc71a0087ea441606929abcc71e8a1b67f2edcf4ab8709d0a5375b33d6a2853",
+    "ui_overlap.png": "104daadeddd64b938a65f50088f1e42b4a433cad3bf4705bb3be682602513a53",
+    "ui_watershed.png": "e7f54e91d8abe9951205f35768ee55d77163af7c1f5b27e4c10b012d03618f80"
+  }
+}

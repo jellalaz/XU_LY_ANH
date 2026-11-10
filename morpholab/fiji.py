@@ -1,4 +1,4 @@
-"""Compile/run a small Java adapter against the user's Fiji installation."""
+"""Gọi Java thật của Fiji/MorphoLibJ để kiểm chứng, lưu ảnh và metric độc lập."""
 from pathlib import Path
 import subprocess
 import os
@@ -13,7 +13,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 def _execute(command, timeout=180):
-    """Always reap our child, including cancellation, timeout and app closure."""
+    """Chạy tiến trình con có thời hạn; thu hồi tiến trình khi lỗi, hủy hoặc đóng app."""
     import subprocess
     started=time.monotonic()
     check_cancelled()
@@ -35,6 +35,7 @@ def _execute(command, timeout=180):
 
 
 def installation(home=r'C:\Tools\Fiji'):
+    """Tìm Java JDK, ImageJ và MorphoLibJ trong thư mục Fiji đã cài."""
     home=Path(home)
     java=next(iter(home.glob('java/**/bin/java.exe')),None)
     javac=next(iter(home.glob('java/**/bin/javac.exe')),None)
@@ -46,6 +47,7 @@ def installation(home=r'C:\Tools\Fiji'):
 
 
 def run_reference(result, folder, truth=None, home=r'C:\Tools\Fiji', native=False):
+    """Xuất đầu vào TIFF và gọi JAR Fiji thật. Shared dùng chung ba ảnh; native tự xử lý từ ảnh xám chuẩn hóa. Java tính thêm metric độc lập."""
     folder=Path(folder).resolve(); folder.mkdir(parents=True,exist_ok=True)
     java,javac,ij,morpho=installation(home)
     build=ROOT/'build'; build.mkdir(exist_ok=True)
@@ -58,7 +60,7 @@ def run_reference(result, folder, truth=None, home=r'C:\Tools\Fiji', native=Fals
         if proc.returncode: raise RuntimeError(proc.stdout+'\n'+proc.stderr)
     for key in ('elevation','markers','mask'):
         a=result.stages[key]
-        # ImageJ reads float32 consistently, including marker IDs.
+        # ImageJ đọc float32 nhất quán, kể cả ảnh ID marker.
         if key=='mask': a=a.astype(np.uint8)*255
         else: a=a.astype(np.float32)
         tifffile.imwrite(folder/(key+'.tif'),a)
@@ -86,10 +88,10 @@ def run_reference(result, folder, truth=None, home=r'C:\Tools\Fiji', native=Fals
     if truth is not None: stats['fiji_against_ground_truth']=evaluate(truth,labels)
     write_json(folder/'comparison.json',stats)
     tifffile.imwrite(folder/'disagreement.tif',diff.astype(np.uint8)*255)
-    # Explicit folder literal escapes backslashes and quotes without executing shell code.
+    # Ghi chuỗi thư mục trực tiếp vào script, không nội suy thành lệnh shell.
     import json
     if native:
-        # Native intermediate images are independently computed by Fiji.
+        # Các ảnh trung gian native do chính Fiji tự tính.
         for src,dst in [('native_elevation','elevation'),('native_markers','markers'),('native_mask','mask')]:
             import shutil
             shutil.copyfile(folder/(src+'.tif'),folder/(dst+'.tif'))

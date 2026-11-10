@@ -8,6 +8,8 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .ipynb_checkpoints/
+.vscode/
+.chart-data-*/
 data/raw/
 data/bbbc039/
 data/synthetic/

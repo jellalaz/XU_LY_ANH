@@ -106,7 +106,7 @@ Erosion, hay phép co, giữ vị trí x nếu toàn bộ phần tử B khi đ�
 
 Cài đặt không duyệt từng cửa sổ bằng Python: với mỗi điểm khác 0 của SE, lấy một lát của ảnh đã đệm, rồi AND hoặc OR trên toàn mảng NumPy. Nếu N=H\ensuremath{\times}W và k là số điểm của SE, số phép toán tỷ lệ O(Nk), bộ nhớ phụ tỷ lệ O(N) ngoài ảnh đệm. Đây là cách cài dễ đối chiếu với định nghĩa; SE lớn vẫn có thể tốn thời gian.
 
-Ảnh xám có định nghĩa tổng quát bằng min/max trên lân cận với phần tử phẳng. Phần tự cài và đối chiếu ở dự án này dùng hình thái nhị phân trong quy trình phân đoạn; tái tạo ảnh xám được xử lý riêng ở chương sau.
+Ảnh xám có định nghĩa tổng quát bằng min/max trên lân cận với phần tử phẳng. Phần tự cài và đối chiếu ở dự án này dùng hình thái nhị phân trong quy trình phân đoạn; tái tạo ảnh xám được dùng khi lọc cực đại và cài đặt trong chương Python.
 
 \section{Opening và Closing}
 Opening là erosion rồi dilation với cùng phần tử cấu trúc. Closing là dilation rồi erosion. Opening thường loại vùng nhỏ không chứa được phần tử cấu trúc; closing thường khép khe nhỏ và lỗ nhỏ. Hai phép không phải hai phép nghịch đảo, vì thông tin bị loại có thể không khôi phục được.
@@ -191,6 +191,7 @@ Hàng đợi ưu tiên của bản tự cài sắp theo cặp (mức ngập, th�
 Quy tắc này tạo đầu ra xác định với thứ tự duyệt và liên thông cố định. Tuy nhiên một thư viện khác có thể xử lý plateau, thứ tự khởi tạo, khoảng cách trên vùng phẳng hoặc đường phân cách khác. Đó là lý do Fiji shared có thể khác ranh giới dù cùng mask và marker. Báo cáo không dùng tuyên bố tương đương tuyệt đối giữa mọi biến thể Watershed.
 
 Với heap nhị phân và mỗi pixel được đưa vào tối đa một lần, chi phí chính O(N log N), bộ nhớ O(N). Tính đúng cơ bản được kiểm tra bằng các bất biến: nhãn ngoài mask bằng 0; nhãn marker được bảo toàn; thành phần có marker nhận nhãn. Chất lượng so với đối tượng thật cần đánh giá bằng ground truth riêng.
+\input{fiji_manual}
 \chapter{Cài đặt và tổ chức quy trình Python}\label{chap:implementation}
 
 \section{Quy trình Python hoàn chỉnh}
@@ -254,114 +255,27 @@ Mã dưới đây là phần tự cài trong morpholab/algorithms.py. Nó sử d
 \lstinputlisting[caption={Trích mã tự cài: watershed},label={lst:watershed}]{code/watershed.py}
 
 Thí nghiệm cần lưu chính elevation, markers, mask và connectivity mà hàm này nhận. Một ảnh overlay đơn lẻ không đủ để tái lập, vì thay đổi tiền xử lý hoặc marker có thể thay đổi mạnh số vùng và đường biên. Dữ liệu xuất của dự án chứa các TIFF trung gian và run.json để đáp ứng yêu cầu này.
-\chapter{Thực hành và kiểm chứng trên Fiji/ImageJ}\label{chap:fiji}
 
-\section{Fiji và plugin MorphoLibJ}
-Fiji là bản phân phối ImageJ kèm hệ sinh thái plugin. MorphoLibJ cung cấp các phép hình thái, tái tạo, gán nhãn và Watershed để khảo sát và tham chiếu [1,2]. Máy thực nghiệm sử dụng ImageJ 1.54p và MorphoLibJ 1.6.5. Plugin được bật từ update site IJPB-plugins và xuất hiện trong Plugins > MorphoLibJ.
-
-Đề tài sử dụng hai cách tham chiếu. Fiji shared chỉ kiểm tra bước Watershed khi nhận cùng elevation, markers, mask và liên thông. Fiji native tự thực hiện một quy trình tiền xử lý và phân đoạn bằng ImageJ/MorphoLibJ. Hai cách trả lời hai câu hỏi khác nhau: độ nhất quán triển khai và hiệu quả của một quy trình tham chiếu độc lập.
-
-Adapter Java gọi API thật của MorphoLibJ, không thay kết quả Fiji bằng kết quả Python. Fiji nhận TIFF có kiểu dữ liệu thích hợp và trả ảnh nhãn. MorphoBridge còn tính IoU, Dice tiền cảnh và số đối tượng bằng Java độc lập với bộ metric Python. Điều này tạo bằng chứng định lượng từ cả hai phía.
-
-Các lớp Java được biên dịch với JAR trong thư mục Fiji đã cài. Python chỉ điều phối tiến trình, lưu tham số và thu dữ liệu. Khi muốn minh họa trực tiếp trong Fiji, dùng script Groovy đã xuất để mở ảnh và chạy lại bước Watershed trong Script Editor. Quy trình này có thể thực hiện mà không mở ứng dụng MorphoLab.
-\section{Bắt đầu: mở Fiji và chuẩn bị ba ảnh kiểm chứng}
-\label{sec:fiji-start}
-Phần thực hành này dùng chính kết quả mẫu đã chạy thành công bằng Python. Mục tiêu là tự thao tác trong Fiji, nhìn thấy ảnh đầu vào và nhận được một ảnh nhãn do MorphoLibJ tính, sau đó đo kết quả bằng nhãn đúng. Không cần mở ứng dụng MorphoLab.
-
-\begin{figure}[htbp]\centering
-\includegraphics[width=0.94\linewidth]{figures/fiji_toolbar.png}
-\caption{Cửa sổ thanh công cụ Fiji/ImageJ trong lần cài đặt trên máy người học. File dùng mở/lưu ảnh; Plugins chứa MorphoLibJ; mỗi ảnh có cửa sổ riêng.}\label{fig:fiji-toolbar}
-\end{figure}
-
-\begin{enumerate}[leftmargin=*,itemsep=4pt]
-\item Mở \texttt{C:\textbackslash Tools\textbackslash Fiji\textbackslash fiji-windows-x64.exe}. Fiji có cửa sổ thanh công cụ nhỏ, không phải một cửa sổ làm việc toàn màn hình. Ảnh mở ra trong các cửa sổ riêng.
-\item Kiểm tra menu \textbf{Plugins $\to$ MorphoLibJ}. Nếu chưa có, vào \textbf{Help $\to$ Update $\to$ Manage update sites}, bật \textbf{IJPB-plugins}, áp dụng cập nhật và mở lại Fiji. Máy thực nghiệm đã có MorphoLibJ 1.6.5.
-\item Trong Anaconda Prompt đã kích hoạt env \texttt{ai}, chạy lệnh dưới đây một lần để tạo đúng dữ liệu kiểm chứng. Nếu đã chạy và có đủ tệp, chuyển sang bước tiếp theo.
-\end{enumerate}
-\begin{lstlisting}[language={},numbers=none]
-cd /d D:\XU_LY_ANH
-python -m morpholab segment data\synthetic\synth_00.tif ^
- --truth data\synthetic\synth_00_gt.tif ^
- --out outputs\demo_shared --fiji
-\end{lstlisting}
-
-Trong Fiji chọn \textbf{File $\to$ Open} hoặc \textbf{Ctrl+O}, mở lần lượt ba tệp trong thư mục \texttt{D:\textbackslash XU\_LY\_ANH\textbackslash outputs\textbackslash demo\_shared\textbackslash fiji}. Chỉ cần mở ba ảnh này trước khi chạy Watershed.
-
-\begin{table}[htbp]\centering\small
-\caption{Ba đầu vào của Watershed trong phép kiểm chứng chung dữ liệu.}\label{tab:fiji-inputs}
-\begin{tabularx}{\linewidth}{l X X}\toprule
-Tệp & Ý nghĩa & Cách đọc hình \\\midrule
-\texttt{elevation.tif} & Địa hình $E=-D$, giá trị thực 32-bit & Tâm vật thể là vùng thấp; không đổi dấu hay chuẩn hóa lại.\\
-\texttt{markers.tif} & Nhãn các hạt giống, nền bằng 0 & Mỗi ID dương khởi tạo một vùng; ảnh có thể tối vì ID chỉ 1--7.\\
-\texttt{mask.tif} & Miền tiền cảnh được phép lan nhãn & Trắng là đối tượng; đen là nền.\\\bottomrule
-\end{tabularx}\end{table}
-
-\section{Chạy bằng menu Marker-controlled Watershed}
-\label{sec:fiji-menu}
-\begin{enumerate}[leftmargin=*,itemsep=5pt]
-\item Chọn \textbf{Plugins $\to$ MorphoLibJ $\to$ Segmentation $\to$ Marker-controlled Watershed}. Có thể tìm tên lệnh bằng ô tìm kiếm Fiji khi menu thay đổi theo phiên bản.
-\item Trong hộp thoại, chọn \textbf{Input = elevation.tif}, \textbf{Marker = markers.tif}, \textbf{Mask = mask.tif}. Không chọn ảnh gốc làm Marker.
-\item Với MorphoLibJ 1.6.5, bỏ tích \textbf{Use diagonal connectivity} để dùng liên thông 4 trong ảnh 2D; bật ô này tương ứng liên thông 8. Đặt \textbf{Compactness = 0}. Bỏ \textbf{Binary markers} vì \texttt{markers.tif} đã chứa ID nhãn. Bỏ \textbf{Calculate dams}: phép so sánh đang dùng không tạo đường phân cách mang nhãn nền. Nếu phiên bản khác hiển thị một danh sách Connectivity, chọn 4.
-\item Bấm \textbf{OK}. Fiji tạo một ảnh nhãn mới. Với ví dụ này, kết quả mong đợi là \textbf{7 đối tượng}. Màu hoặc số ID không nhất thiết trùng Python; không so hai ảnh chỉ bằng màu.
-\item Nếu kết quả gần như đen, đổi \textbf{Image $\to$ Lookup Tables} sang một LUT màu hoặc chỉnh \textbf{Image $\to$ Adjust $\to$ Brightness/Contrast}. Chỉ thay cách hiển thị. Giữ ảnh nhãn số nguyên/thực chứa ID khi lưu, không chuyển sang RGB để chấm điểm.
-\item Chọn \textbf{File $\to$ Save As $\to$ Tiff}, lưu tên \texttt{fiji\_manual\_labels.tif} trong thư mục trên. Tên khác được phép nếu thay đúng đường dẫn ở lệnh đánh giá.
-\end{enumerate}
-
-\section{Lưu kết quả và đo định lượng}
-\label{sec:fiji-measure}
-Sau khi lưu ảnh nhãn từ Fiji, quay lại Anaconda Prompt:
+\section{Chấm nhãn Fiji làm tay và so với Python tự cài}
+Sau khi lưu kết quả menu Fiji, dùng đúng nhãn gốc để tính F1, không dùng mask đã gom các ID. Bộ minh chứng đã đặt tên ổn định trong repository nên có thể chấm lại mà không cần thư mục thực hành của người học:
 \begin{lstlisting}[language={},numbers=none]
 python -m morpholab evaluate ^
- data\synthetic\synth_00_gt.tif ^
- outputs\demo_shared\fiji\fiji_manual_labels.tif ^
- --out outputs\demo_shared\fiji\manual_metrics.json
+ docs/evidence/fiji_manual/ground_truth.tif ^
+ docs/evidence/fiji_manual/labels.tif ^
+ --out outputs/manual_fiji_metrics.json
+python -m morpholab segment ^
+ docs/evidence/fiji_manual/input_16bit.tif ^
+ --truth docs/evidence/fiji_manual/ground_truth.tif ^
+ --config configs/default.json --out outputs/python_example
 \end{lstlisting}
-Mở \texttt{manual\_metrics.json}. Kỳ vọng \texttt{predicted\_objects=7}, \texttt{true\_objects=7}, \texttt{object\_f1=1}. IoU tiền cảnh xấp xỉ 0,981397 và Dice xấp xỉ 0,990611. Đây là điểm của ảnh ví dụ; bảng ảnh thật ở Chương~\ref{chap:experiments} mới dùng để đánh giá quy mô nhiều ảnh.
+Python tự cài có 7 đối tượng, F1=1, IoU khoảng 0,981397 và Dice 0,990611. Fiji làm tay cũng 7 đối tượng và F1=1, nhưng IoU/Dice là 0,980451/0,990129. Hai quy trình có tiền xử lý và SE khác nhau nên không đòi từng pixel trùng. Chấm cả hai với cùng ground truth để phân biệt độ đúng và độ đồng thuận.
 
-Phía Fiji/Java còn tự tính IoU, Dice và số đối tượng vào \texttt{fiji\_metrics.csv}. Mở tệp này cạnh \texttt{metrics.json} của Python để thấy phép đo trên cả hai nền tảng. Giá trị đồng thuận Python--Fiji khoảng 0,9848 trên ví dụ là độ giống nhau sau ghép ID, khác với F1 so với nhãn đúng. Fiji không được coi là ground truth.
+Muốn cô lập riêng bước Watershed, chạy Fiji shared nhận cùng elevation, marker, mask và liên thông. Kết quả có thể khác ID nhưng vẫn cùng vùng nên bộ so sánh ghép nhãn trước khi tính đồng thuận. Không dùng màu LUT để so kết quả hoặc xem Fiji là nhãn đúng.
 
-Có thể xem thuộc tính nhãn bằng nhóm lệnh \textbf{Plugins $\to$ MorphoLibJ $\to$ Analyze} rồi chọn lệnh phân tích vùng 2D tương ứng. Chọn ảnh nhãn đầu vào để đọc số vùng/diện tích. Các đại lượng hình học phụ thuộc chuẩn liên thông, phép đo chu vi và hiệu chuẩn pixel, vì vậy muốn đối chiếu phải dùng cùng đơn vị. Với thí nghiệm này diện tích báo theo pixel$^2$. Không dùng \textbf{Analyze Particles} trên mask chưa tách để thay số nhãn Watershed: hai vật chạm nhau có thể bị đếm chung.
+\section{Phân biệt dữ liệu chính, ảnh minh họa và file thông số}
+Một lệnh segment lưu nhiều tệp để truy vết; không phải 17 lần xử lý thủ công. Chuỗi chính là gray, smoothed, binary, morphology, mask, distance; từ distance tạo elevation và marker; Watershed nhận đồng thời elevation/markers/mask rồi xuất labels. Erosion/dilation còn dùng khảo sát riêng; components là đối chứng trước tách và hỗ trợ seed dự phòng. Labels RGB và overlay chỉ để xem; objects.csv đo từng vùng, metrics.json chấm với nhãn đúng, run.json ghi tham số và thời gian. Không dùng PNG màu thay TIFF ID khi đánh giá.
 
-\section{Chạy lại bằng script Groovy tự động}
-\begin{enumerate}[leftmargin=*]
-\item Trong Fiji mở \textbf{File $\to$ New $\to$ Script}; chọn \textbf{Language = Groovy}.
-\item Mở tệp \texttt{outputs/demo\_shared/fiji/Run\_in\_Fiji.groovy} trong editor. Tệp này có sẵn đường dẫn tuyệt đối đến ba ảnh của lần chạy.
-\item Bấm \textbf{Run}. Một ảnh nhãn hiện ra và tệp \path{fiji_interactive_labels.tif} được lưu cạnh các đầu vào.
-\item Dùng lệnh \texttt{evaluate} như trên, thay tên dự đoán thành \path{fiji_interactive_labels.tif}. Kết quả cần tương ứng phép chạy menu nếu chọn cùng tham số.
-\end{enumerate}
-Script dùng chung \texttt{fiji/ReplayWatershed.groovy} có hộp chọn thư mục, liên thông 4/8 và bật/tắt hiển thị. Chọn thư mục có đủ ba TIFF như Bảng~\ref{tab:fiji-inputs}. Toàn bộ script ở phụ lục; phần tính toán đã được kiểm tra bằng Groovy với hiển thị tắt, không chỉ được viết để minh họa.
-
-\section{Khảo sát các toán tử hình thái trong Fiji}
-Để học phép toán trước khi chạy cả quy trình, mở \texttt{mask.tif}, tạo bản sao bằng \textbf{Image $\to$ Duplicate}, rồi tìm \textbf{Morphological Filters} trong nhóm \textbf{MorphoLibJ $\to$ Filtering}. Chọn lần lượt Erosion, Dilation, Opening, Closing trên \emph{các bản sao của cùng ảnh ban đầu}; chọn SE vuông, bán kính 1 để đối chiếu hình minh họa ở Chương~\ref{chap:theory}. Không chạy liên tiếp co rồi giãn trên cùng cửa sổ rồi nhầm đó là hai đầu ra độc lập.
-
-Các lệnh reconstruction trong nhóm Filtering cho phép nhận marker và mask. Bản native tự động xuất \path{native_erosion.tif}, \path{native_dilation.tif}, \path{native_opening.tif}, \path{native_closing.tif} và \path{native_reconstruction.tif}; đây là bộ minh chứng cùng quy trình và tham số để so với thao tác tay.
-
-\section{Nhật ký thực hành cần giữ}
-Mỗi lần thực hành ghi tên ảnh, SE/h/radius/connectivity, tùy chọn dams, tên tệp kết quả và chỉ số. Nếu đếm sai, xem mask trước: mask rỗng thì Watershed không thể tạo lại vùng đã bị loại. Nếu còn mask nhưng chia thừa/gộp sai, xem marker và khoảng cách. Hình giao diện Fiji trong báo cáo là minh chứng thao tác; nhãn TIFF và CSV mới là dữ liệu để đo và tái lập.
-
-
-\section{Quy trình Fiji độc lập và các khác biệt}
-NativePipeline.java đọc ảnh xám chuẩn hóa, lượng tử hóa 8-bit, chạy Gaussian của ImageJ và chọn ngưỡng Otsu từ histogram. Phần tử cấu trúc là SquareStrel với bán kính cấu hình. Fiji tự xuất erosion, dilation, opening, closing, reconstruction, mask, connected components, distance, marker, elevation và kết quả nhãn.
-
-Mask mặc định dùng mở bằng reconstruction, lấp lỗ và lọc diện tích. Khoảng cách dùng ImageJ EDM. Marker dùng MorphoLibJ extended maxima, sau đó gán nhãn và bổ sung hạt giống cho thành phần chưa có marker. Watershed chạy không tạo dams. Quy ước chi tiết được lưu trong native\_parameters.txt.
-
-\begin{table}[H]\centering\small
-\caption{Những khác biệt cần kiểm soát khi diễn giải kết quả.}\label{tab:native}
-\begin{tabularx}{\linewidth}{X X X}
-\toprule
-\textbf{Bước} & \textbf{Python mặc định} & \textbf{Fiji native} \\ \midrule
-Cường độ & Float chuẩn hóa & 8-bit \\
-SE & Đĩa r=1 & Vuông r=1 \\
-Khoảng cách & Euclid tách trục & ImageJ EDM \\
-Cực đại & h-maxima & Extended maxima \\
-Lấp lỗ & Liên thông đã chọn & Mặc định plugin \\
-Thời gian & Không đọc ghi & Có ghi TIFF \\
-\bottomrule\end{tabularx}\end{table}
-
-
-Native là một baseline cố định, không sao chép mọi lựa chọn GUI của Python: shape, operation, mode, ngưỡng thủ công, fill\_holes và marker thủ công không được chuyển thành cùng thao tác. Việc gọi nó “độc lập” không có nghĩa đầu vào cường độ thô hoặc mọi thuật toán hoàn toàn giống Python; ảnh gray chuẩn hóa là điểm chung, sau đó Fiji tự tính các bước.
-
-Đo thời gian native bao gồm ghi ảnh TIFF trung gian. Thời gian Fiji shared riêng Watershed không bao gồm JVM; process\_seconds bao gồm khởi động và adapter. Vì phạm vi đo khác nhau, không lấy trực tiếp các cột này chia nhau để công bố một speedup chung. Đây là kiểm soát quan trọng khi viết phần benchmark.
+Các file code chính có chú thích tiếng Việt: algorithms.py cài toán tử; pipeline.py ghép quy trình; metrics.py chấm điểm; studies.py và benchmark.py chạy khảo sát; fiji.py điều phối tham chiếu. gui.py và ui.py chỉ cung cấp giao diện gọi lại cùng phần lõi. Vì vậy nghiên cứu có thể tái lập hoàn toàn bằng lệnh và menu Fiji trước khi dùng phần mở rộng ứng dụng.
 \chapter{Thiết kế thực nghiệm, kết quả và đánh giá}\label{chap:experiments}
 
 \section{Dataset và nhãn đúng}
@@ -634,10 +548,10 @@ Các sản phẩm chính gồm code Python, adapter và script Fiji, dữ liệu
 \toprule
 \textbf{Yêu cầu} & \textbf{Minh chứng} \\ \midrule
 Lý thuyết 8 nội dung & Chương 2, công thức đánh số, ví dụ tính tay \\
-Tự cài thuật toán & Chương 3; mã nguồn Python trong repository \\
-Thực hành Fiji & Chương 4, ảnh chụp thao tác và script Groovy \\
+Tự cài thuật toán & Chương 4; mã nguồn Python trong repository \\
+Thực hành Fiji & Chương 3, ảnh chụp thao tác và script Groovy \\
 Định lượng hai nền tảng & Chương 5; CSV Python và Java/Fiji \\
-Báo cáo và trình chiếu & Bản PDF LaTeX này và presentation 10 slide \\
+Báo cáo và trình chiếu & Bản PDF LaTeX này và 10 slide, kịch bản 15 phút \\
 App hỗ trợ & Chương 6, cùng phần lõi CLI \\
 \bottomrule\end{tabularx}\end{table}
 Một đại diện nhóm nộp link theo LMS và ghi rõ Nhóm 1. Hạn trong đề là 19/11; nhóm xác nhận năm và giờ trên LMS. Nhóm kiểm tra tên, MSSV, phân công thực tế và luyện chạy lại demo. Hồ sơ chưa được nộp LMS tự động.

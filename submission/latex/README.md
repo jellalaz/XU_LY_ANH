@@ -1,28 +1,27 @@
-# Báo cáo LaTeX — PTIT Nhóm 1
+# Nguồn báo cáo LaTeX — Nhóm 1
 
-Mở `main.tex`. Tệp PDF xuất cuối cùng ở `../BAO_CAO_NHOM_1.pdf` là bản báo cáo chính, thay bản PDF bố cục cũ. Bản Word tạo trước đó giữ để tham khảo; không đồng bộ bố cục/nội dung mới với bản LaTeX.
+`main.tex` là nguồn chính, `fiji_manual.tex` chứa chương thực hành Fiji từng bước. Chỉnh hai file này khi sửa nội dung; không còn bộ sinh từ Word/Markdown cũ ghi đè nguồn.
 
-Đây là bố cục học thuật A4 tự xây dựng theo nội dung đề bài, không phải mẫu chính thức được PTIT ban hành. Có bìa, tóm tắt, mục lục, danh mục hình/bảng, chương/mục, công thức, bảng/hình có số và tài liệu tham khảo.
+Thứ tự báo cáo: giới thiệu, lý thuyết, Fiji làm tay, Python và đối chiếu, thực nghiệm nhiều ảnh, app mở rộng và kết luận. Có bìa, mục lục, danh mục hình/bảng, công thức và tài liệu tham khảo. Đây là bố cục học thuật của nhóm, không phải mẫu chính thức do PTIT ban hành.
 
 ## Biên dịch
 
-- **Overleaf:** tải ZIP nguồn LaTeX, chọn **XeLaTeX** làm compiler, chọn `main.tex` là main document, Recompile. Không cần upload code/dataset ngoài thư mục LaTeX này.
-- **TeX Live/MiKTeX:** vào thư mục này, chạy `xelatex -interaction=nonstopmode main.tex` hai lần; hoặc `latexmk -xelatex main.tex`. Có thể cần lần thứ ba khi mục lục thay đổi độ dài.
-- **Tectonic:** chạy `tectonic main.tex`. Công cụ tự tải gói cần thiết; lần đầu cần mạng. Bản đã biên dịch dùng Tectonic 0.17.0 (engine XeTeX).
+- **Overleaf:** tải `submission/NGUON_LATEX_NHOM_1.zip`, chọn XeLaTeX và `main.tex`.
+- **TeX Live/MiKTeX:** chạy `xelatex -interaction=nonstopmode main.tex` ít nhất hai lần, hoặc `latexmk -xelatex main.tex`.
+- **Tectonic:** chạy `tectonic main.tex`; lần đầu cần tải gói. Font Windows: Times New Roman, Arial, Consolas; nguồn có font thay thế khi lên Overleaf.
+- **Trên máy phát triển:** `python scripts/build_report.py` từ gốc project, dùng Python có pypdf và Tectonic. Có thể truyền `--tectonic <duong_dan>`. Thư viện dựng tài liệu không phải thư viện bắt buộc để chạy thuật toán.
 
-Font trên Windows là Times New Roman, Arial, Consolas. Nếu không có, nguồn tự chọn TeX Gyre Termes/Heros và Latin Modern Mono. Các công thức là LaTeX thật, không phải ảnh chụp hoặc văn bản giả công thức.
+`scripts/build_report.py` đồng bộ các trích mã thực thi, biên dịch và kiểm tra trước khi chép PDF cuối sang `submission/BAO_CAO_NHOM_1.pdf`. Script không tái tạo nội dung chương từ bản thảo cũ. File trung gian nằm dưới `outputs/latex_build`.
 
-## Tổ chức nguồn
+## Hình và dữ liệu
 
-- `main.tex`: toàn bộ báo cáo, bảng lấy từ CSV đã đo, công thức và trích dẫn.
-- `fiji_tutorial.tex`, `app.tex`: nội dung chi tiết để dùng khi dựng lại nguồn bằng script.
-- `code/`: các đoạn code thực được đưa vào báo cáo.
-- `figures/`: hình khoa học tạo từ dữ liệu thí nghiệm và ảnh giao diện người học đã cung cấp.
+- `figures/manual_*.png`: hình khoa học từ TIFF người học lưu khi làm tay.
+- `figures/ui_*.png`: ảnh chụp giao diện do người học gửi, không phải giao diện giả lập.
+- Các hình so sánh nhiều ảnh lấy từ CSV/TIFF đã đo, giữ riêng nguồn và phạm vi.
+- `code/`: trích thuật toán từ code đang chạy, bỏ chú thích để gọn nhưng kiểm tra AST câu lệnh giống bản gốc. Code chính trong `morpholab/` có chú thích tiếng Việt.
 
-`scripts/build_latex_report.py` ở repository tạo `main.tex` từ bản nội dung nghiên cứu và hai phần bổ sung; nó không cần chạy khi bạn chỉnh trực tiếp `main.tex`. `scripts/latex_figures.py` tạo lại hình khoa học từ ảnh/kết quả cục bộ; giữ số liệu nghiên cứu và loại ảnh rõ ràng.
+Chạy `python scripts/prepare_manual_evidence.py` để kiểm tra lại TIFF/metric và dựng lại hình thực hành từ bộ dữ liệu đã lưu trong Git. Không cần thư mục Temp hoặc đầu ra cũ của người dùng. Cờ `--capture` chỉ dành cho người quản lý khi nhập lại một buổi thực hành mới, không dùng khi tái lập bản đã nộp.
 
-## Số trang
+Nguồn TIFF: `docs/evidence/fiji_manual`. Bản elevation dương lưu trước phép nhân được giữ riêng để truy vết; bản elevation dùng trong báo cáo là `-distance`, đã chạy lại MorphoLibJ và khớp vùng nhãn làm tay. Các ảnh toán tử học thử có bán kính khác nhau, chú thích ghi rõ để tránh hiểu nhầm là thí nghiệm kiểm soát một yếu tố.
 
-Trang bìa không in số. Phần đầu dùng i, ii, …; nội dung chính bắt đầu từ 1. Trình xem PDF có thể báo số thứ tự vật lý khác số in ở chân trang. Khi dẫn trong báo cáo, dùng số hình/bảng/mục, hoặc số trang in trên bản PDF mới.
-
-Các ảnh minh họa gồm ví dụ Python/Fiji, sáu bước xử lý, toán tử hình thái Fiji, ảnh thật và nhãn đúng, CCL so với Watershed, ba biểu đồ nghiên cứu, thanh công cụ Fiji và giao diện app. Ảnh giao diện do người học cung cấp ở các lượt trước, không dùng để thay dữ liệu định lượng.
+Trang bìa không in số, phần đầu dùng số La Mã, nội dung bắt đầu từ 1. Số trang vật lý trong trình xem khác số ở chân trang.

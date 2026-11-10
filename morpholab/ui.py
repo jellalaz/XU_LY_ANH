@@ -1,4 +1,4 @@
-"""Vietnamese presentation labels; numerical/file-format keys stay unchanged."""
+"""Nhãn giao diện tiếng Việt; giữ nguyên khóa cấu hình và định dạng số liệu."""
 import tkinter as tk
 
 CHOICES={

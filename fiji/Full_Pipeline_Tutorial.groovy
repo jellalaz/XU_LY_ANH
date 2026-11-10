@@ -1,9 +1,9 @@
 #@ File(label="Anh xam dau vao (synth_00.tif)", style="file") inputFile
 #@ File(label="Thu muc MOI de luu ket qua", style="directory") outputFolder
 #@ Boolean(label="Hien cac buoc trong Fiji", value=true) showStages
-// Standalone Fiji/Groovy pipeline, matching the project's native baseline.
-// Fixed protocol: 8-bit min-max, sigma=1, square radius=1, h=2,
-// min_area=25, connectivity=4, bright objects, no dams, compactness=0.
+// Quy trình Groovy chạy độc lập trong Fiji, theo baseline native của project.
+// Cấu hình cố định: min-max về 8-bit, sigma=1, SE vuông r=1, h=2,
+// diện tích tối thiểu=25, liên thông 4, vật sáng, không dams, compactness=0.
 import ij.IJ
 import ij.ImagePlus
 import ij.io.FileSaver
@@ -38,7 +38,7 @@ def save={String name,ImageProcessor processor ->
     if (!new FileSaver(imp).saveAsTiff(new File(outputFolder,name+'.tif').absolutePath)) throw new IOException('Save failed: '+name)
     if (showStages) {
         if (name in ['native_markers','morpholibj_labels']) {
-            IJ.run(imp,'3-3-2 RGB','') // LUT only: keep label pixel IDs unchanged.
+            IJ.run(imp,'3-3-2 RGB','') // Chỉ đổi LUT; giữ nguyên ID pixel nhãn.
         }
         imp.show()
     }

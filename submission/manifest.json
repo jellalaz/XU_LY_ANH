@@ -1,22 +1,30 @@
 {
-  "BAO_CAO_NHOM_1.docx": {
-    "bytes": 273825,
-    "sha256": "fc79c65d00a629c10f96f6c7ab4ccc3167a0875090334146c8894a91151f05c8"
-  },
-  "BAO_CAO_NHOM_1.pdf": {
-    "bytes": 2217642,
-    "sha256": "e867c2ba40b5be831be46bc81fcd0356ea0892de6505d8dd7856dc4bab066ba6"
-  },
-  "PRESENTATION_NHOM_1.pptx": {
-    "bytes": 170515,
-    "sha256": "b4a873ad0067c76d6296b6094b39291e0de0239bc77464bf6b21825edc78a1f4"
-  },
-  "pdf_pages": 37,
-  "slides": 10,
-  "docx_tables": 8,
-  "docx_unresolved_directives": [],
-  "arabic_numbered_pages": 31,
-  "report_format": "LaTeX",
   "primary_report": "BAO_CAO_NHOM_1.pdf",
-  "docx_status": "Legacy before LaTeX additions; use PDF and latex/main.tex for final report."
+  "report_format": "LaTeX",
+  "pdf_pages": 39,
+  "arabic_numbered_pages": 33,
+  "slides": 10,
+  "presentation_seconds": 900,
+  "manual_fiji_evidence": "docs/evidence/fiji_manual",
+  "report_order": [
+    "ly thuyet",
+    "Fiji lam tay",
+    "Python va doi chieu",
+    "thuc nghiem",
+    "app mo rong"
+  ],
+  "files": {
+    "BAO_CAO_NHOM_1.pdf": {
+      "bytes": 2614540,
+      "sha256": "1e0fd423070870b701bdaba4b3de57f0f28bfd1a97ae2fee70ddabce0402a4f4"
+    },
+    "PRESENTATION_NHOM_1.pptx": {
+      "bytes": 1979528,
+      "sha256": "c0b7e6d27897dbc19aea7c40b320219c4c22daf4aa63ae8841a526b3e0bd7ec3"
+    },
+    "NGUON_LATEX_NHOM_1.zip": {
+      "bytes": 2614581,
+      "sha256": "887f6b521d6ffed3bf0eb69a771e45c1d77e79de12790b3f573ceaf06f4f1dc1"
+    }
+  }
 }

@@ -1,0 +1,70 @@
+[
+  {
+    "path": "outputs/word_pages",
+    "bytes": 5450705.0
+  },
+  {
+    "path": "outputs/report_qa",
+    "bytes": 10450082.0
+  },
+  {
+    "path": "outputs/fiji_lesson_test",
+    "bytes": 1257966.0
+  },
+  {
+    "path": "outputs/fiji_handbook",
+    "bytes": 6441800.0
+  },
+  {
+    "path": "outputs/presentation_delivery",
+    "bytes": 2150043.0
+  },
+  {
+    "path": "outputs/delivery",
+    "bytes": 27439585.0
+  },
+  {
+    "path": "outputs/vscode_single_check_20261110",
+    "bytes": 1262736.0
+  },
+  {
+    "path": "outputs/fiji_20261108_002546_300436",
+    "bytes": 814887.0
+  },
+  {
+    "path": "outputs/fiji_20261108_191607_590362",
+    "bytes": 814888.0
+  },
+  {
+    "path": "outputs/fiji_20261108_192725_300118",
+    "bytes": 7966158.0
+  },
+  {
+    "path": "outputs/fiji_20261108_192729_735991",
+    "bytes": 16292349.0
+  },
+  {
+    "path": "outputs/manual_audit",
+    "bytes": 316574.0
+  },
+  {
+    "path": "outputs/presentation_build",
+    "bytes": 4709950.0
+  },
+  {
+    "path": "outputs/latex_build",
+    "bytes": 2707988.0
+  },
+  {
+    "path": "outputs/latex_review",
+    "bytes": 14087891.0
+  },
+  {
+    "path": "morpholab/__pycache__",
+    "bytes": 122890.0
+  },
+  {
+    "path": "build",
+    "bytes": 12040.0
+  }
+]

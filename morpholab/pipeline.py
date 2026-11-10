@@ -1,3 +1,4 @@
+"""Ghép các bước xử lý ảnh; chọn bản tự cài hoặc bản thư viện bằng cùng cấu hình."""
 from dataclasses import dataclass, asdict
 from time import perf_counter
 import numpy as np
@@ -25,6 +26,7 @@ class Parameters:
     adaptive_fraction: float = .15
 
     def validate(self):
+        """Kiểm tra miền giá trị tham số trước khi chạy, tránh tạo kết quả từ cấu hình sai."""
         if self.engine not in ('custom','library') or self.mode not in ('ccl','raw','hmax','adaptive'):
             raise ValueError('Engine/mode không hợp lệ')
         if self.operation not in ('none','erosion','dilation','opening','closing','opening_closing','opening_reconstruction'):
@@ -55,6 +57,7 @@ class Result:
 
 
 def run(image, params=None, manual_markers=None):
+    """Chuẩn hóa, Gaussian, Otsu, hình thái, lọc vùng, distance, marker và Watershed. Nhãn đúng không tham gia tạo dự đoán; manual_markers chỉ dùng khi khảo sát tương tác."""
     check_cancelled()
     p = Parameters(**asdict(params or Parameters())).validate()
     if np.asarray(image).ndim != 2 or not np.isfinite(image).all():
@@ -95,10 +98,10 @@ def run(image, params=None, manual_markers=None):
         mask = morph(mask,p.operation)
     stages['morphology'] = mask.copy()
     if p.fill_holes:
-        # Reconstruction of exterior background with explicitly selected connectivity.
+        # Tái tạo nền thông ra biên, rồi lấy phần bù để lấp lỗ kín.
         bg = ~mask
         border = np.zeros_like(mask); border[[0,-1],:] = bg[[0,-1],:]; border[:,[0,-1]] = bg[:,[0,-1]]
-        # Same explicitly documented connectivity is used in both engines here.
+        # Dùng cùng liên thông đã khai báo cho cả hai bản cài đặt.
         mask = ~(recon(border.astype(float),bg.astype(float))>0)
     components = ccl(mask)
     areas = np.bincount(components.ravel())
@@ -111,7 +114,7 @@ def run(image, params=None, manual_markers=None):
         distance = own.distance_transform(mask)
     else:
         distance = ndi.distance_transform_edt(np.pad(mask,1,constant_values=False))[1:-1,1:-1]
-    # Export float32 so both Fiji and Python flood the same elevation precision.
+    # Đổi float32 để Python và Fiji nhận địa hình cùng độ chính xác.
     distance = distance.astype(np.float32)
     stages['distance'] = distance
     stages['elevation'] = -distance
@@ -134,7 +137,7 @@ def run(image, params=None, manual_markers=None):
     else:
         peaks = maxima(distance,p.h)&mask
     markers = ccl(peaks)
-    # Guarantee at least one seed for each nonempty component, documented fallback.
+    # Seed dự phòng tại distance lớn nhất nếu một vùng chưa có marker.
     seeded = set(np.unique(components[markers>0]))
     next_label = int(markers.max(initial=0))
     for label,box in enumerate(ndi.find_objects(components),1):

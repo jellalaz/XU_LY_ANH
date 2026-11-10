@@ -1,7 +1,7 @@
-"""MorphoLab PTIT: reproducible 2D instance segmentation."""
+"""MorphoLab: phân đoạn từng đối tượng trên ảnh 2D, có thể tái lập."""
 __version__ = "1.2.0"
 
-# Keep generated font cache inside the project, also under restricted execution.
+# Giữ bộ đệm font trong project để chạy được trong môi trường hạn chế.
 import os as _os
 from pathlib import Path as _Path
 _cache = _Path(__file__).resolve().parents[1] / 'outputs' / '.matplotlib'

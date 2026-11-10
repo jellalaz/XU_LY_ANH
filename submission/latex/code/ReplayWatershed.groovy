@@ -1,7 +1,6 @@
 #@ File(label="Thu muc ket qua Fiji chua elevation markers mask", style="directory") folder
 #@ Integer(label="Lien thong (4 hoac 8)", value=4) connectivity
 #@ Boolean(label="Hien anh ket qua", value=true) showImages
-// Fiji Script Editor: Language > Groovy. Run, then choose outputs/demo_shared/fiji.
 import ij.IJ
 import inra.ijpb.watershed.Watershed
 def dir = folder.getAbsolutePath()
